@@ -9,6 +9,7 @@ import ClassScreen from "./ClassScreen";
 import styles from "./styles";
 import ProfileScreen from "./ProfileScreen";
 import theme from "./theme";
+import CreateClass from "./CreateClass";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
       >
         <Stack.Screen name="Home" component={ClassScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Create" component={CreateClass} />
       </Stack.Navigator>
     </NavigationContainer>
   );
