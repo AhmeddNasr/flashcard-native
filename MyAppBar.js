@@ -5,7 +5,9 @@ import theme from "./theme";
 import styles from "./styles";
 
 function MyAppBar({ navigation, back, route }) {
-  // console.log(navigation);
+  //only show nav buttons in these screens
+  const showNavigationButtonsScreens = ["Home", "Create"];
+
   return (
     <SafeAreaView style={Styles.AppBarContainer}>
       <View style={Styles.AppBarLogoContainer}>
@@ -31,12 +33,12 @@ function MyAppBar({ navigation, back, route }) {
           />
         </TouchableOpacity>
       </View>
-      {!back && (
+      {showNavigationButtonsScreens.includes(route.name) && (
         <View style={Styles.AppBarNavContainer}>
           <TouchableOpacity onPress={() => navigation.navigate("Home")}>
             <Text style={Styles.Text}>Classes</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+          <TouchableOpacity onPress={() => navigation.navigate("Create")}>
             <Text style={Styles.Text}>Create</Text>
           </TouchableOpacity>
         </View>
@@ -47,7 +49,7 @@ function MyAppBar({ navigation, back, route }) {
 
 const Styles = StyleSheet.create({
   AppBarContainer: {
-    backgroundColor: "#888",
+    backgroundColor: theme.ACCENT_COLOR,
     padding: 15,
     paddingBottom: 0,
   },
@@ -76,6 +78,7 @@ const Styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     flexGrow: 1,
+    paddingBottom: 5,
   },
   Touchable: {
     padding: 5,
