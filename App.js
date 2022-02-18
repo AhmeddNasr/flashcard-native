@@ -10,6 +10,8 @@ import styles from "./styles";
 import ProfileScreen from "./ProfileScreen";
 import theme from "./theme";
 import CreateClass from "./CreateClass";
+import CameraScreen from "./CameraScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -23,10 +25,12 @@ export default function App() {
         }}
         defaultNavigationOptions={{ gestureEnabled: false }}
       >
+        <Stack.Screen name="Create" component={CreateClass} />
         <Stack.Screen name="Home" component={ClassScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="Create" component={CreateClass} />
+        <Stack.Screen name="Camera" component={CameraScreen} />
       </Stack.Navigator>
+      <StatusBar style="light" />
     </NavigationContainer>
   );
 }
