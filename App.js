@@ -1,7 +1,11 @@
+import "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { Text } from "react-native";
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {
+  createStackNavigator,
+  TransitionPresets,
+} from "@react-navigation/stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MyAppBar from "./MyAppBar";
 // import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
@@ -12,18 +16,25 @@ import theme from "./theme";
 import CreateClass from "./CreateClass";
 import CameraScreen from "./CameraScreen";
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 export default function App() {
+  const MyTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: theme.BACKGROUND_COLOR,
+    },
+  };
   // return null;
   return (
-    <NavigationContainer style={{ backgroundColor: theme.BACKGROUND_COLOR }}>
+    <NavigationContainer theme={MyTheme}>
       <Stack.Navigator
         // theme={MyTheme}
         screenOptions={{
           header: (props) => <MyAppBar {...props} />,
+          ...TransitionPresets.SlideFromRightIOS,
         }}
-        defaultNavigationOptions={{ gestureEnabled: false }}
       >
         <Stack.Screen name="Create" component={CreateClass} />
         <Stack.Screen name="Home" component={ClassScreen} />
