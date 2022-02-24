@@ -18,7 +18,7 @@ function MyAppBar({ navigation, back, route }) {
           >
             <Ionicons
               name="arrow-back"
-              size={theme.FONT_SIZE_VERYLARGE}
+              size={theme.FONT_SIZE_ICON}
               color={theme.TEXT_COLOR}
             />
           </TouchableOpacity>
@@ -27,7 +27,7 @@ function MyAppBar({ navigation, back, route }) {
         <TouchableOpacity>
           <Ionicons
             name="menu"
-            size={theme.FONT_SIZE_VERYLARGE}
+            size={theme.FONT_SIZE_ICON}
             color={theme.TEXT_COLOR}
             style={styles.touchable}
           />
@@ -35,10 +35,16 @@ function MyAppBar({ navigation, back, route }) {
       </View>
       {showNavigationButtonsScreens.includes(route.name) && (
         <View style={Styles.AppBarNavContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Home")}
+            style={route.name === "Home" ? Styles.activeTab : Styles.Tab}
+          >
             <Text style={Styles.Text}>Classes</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Create")}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Create")}
+            style={route.name === "Create" ? Styles.activeTab : Styles.Tab}
+          >
             <Text style={Styles.Text}>Create</Text>
           </TouchableOpacity>
         </View>
@@ -59,7 +65,7 @@ const Styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     paddingTop: 0,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   AppBarLogo: {
     color: "#F5F6F7",
@@ -78,10 +84,29 @@ const Styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     flexGrow: 1,
-    paddingBottom: 5,
+    padding: 10,
+    paddingTop: 14,
+    paddingBottom: 0,
   },
   Touchable: {
     padding: 5,
+  },
+  activeTab: {
+    borderBottomColor: theme.TEXT_COLOR,
+    borderBottomWidth: 2,
+    paddingBottom: 5,
+    paddingRight: 10,
+    paddingLeft: 10,
+    flex: 1,
+    alignItems: "center",
+  },
+  Tab: {
+    paddingBottom: 5,
+    paddingRight: 10,
+    paddingLeft: 10,
+    flex: 1,
+    alignItems: "center",
+    opacity: 0.7,
   },
 });
 
