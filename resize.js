@@ -1,15 +1,13 @@
 import React, { useRef, useState, useMemo } from "react";
 import { PanResponder, View, Animated, Text } from "react-native";
+import theme from "./theme";
 
-export default function Test() {
+export default function Resize(props) {
   // const [dragging, setDragging] = useState(false);
   // const [topOffSet, setTopOffSet] = useState(0);
   // console.log(topOffSet);
+  let { maxHeight, maxWidth } = props.maxDimensions;
   const pan = useRef(new Animated.ValueXY()).current;
-
-  const [height, setHeight] = useState(300);
-  const [width, setWidth] = useState(200);
-
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -20,20 +18,20 @@ export default function Test() {
         },
         onPanResponderMove: (evt, gestureState) => {
           // console.log(gestureState);
-          // console.log(height - gestureState.dy);
-          setHeight(
-            height + gestureState.dy < 90
+          // console.log(props.height - gestureState.dy);
+          props.setHeight(
+            props.height + gestureState.dy < 90
               ? 90
-              : height + gestureState.dy > 600
-              ? 600
-              : height + gestureState.dy
+              : props.height + gestureState.dy > maxHeight
+              ? maxHeight
+              : props.height + gestureState.dy
           );
-          setWidth(
-            width + gestureState.dx < 100
+          props.setWidth(
+            props.width + gestureState.dx < 100
               ? 100
-              : width + gestureState.dx > 300
-              ? 300
-              : width + gestureState.dx
+              : props.width + gestureState.dx > maxWidth
+              ? maxWidth
+              : props.width + gestureState.dx
           );
         },
         onPanResponderRelease: () => {
@@ -46,45 +44,33 @@ export default function Test() {
           // pan.flattenOffset();
         },
       }),
-    [height, width]
+    [props.height, props.width, props.maxDimensions]
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "black", padding: 50 }}>
-      <View style={{ backgroundColor: "yellow", flex: 1 }}>
-        <Animated.View
-          style={{
-            backgroundColor: "pink",
-            ...pan.getLayout(),
-            height: height,
-            width: width,
-            justifyContent: "flex-end",
-            alignItems: "flex-end",
-          }}
-          // ref={cropView}
-          onLayout={(event) => {
-            // console.log(event);
-            const layout = event.nativeEvent.layout;
-            // console.log("height:", layout.height);
-            // console.log("width:", layout.width);
-            // console.log("x:", layout.x);
-            // console.log("y:", layout.y);
-          }}
-        >
-          <View
-            {...panResponder.panHandlers}
-            style={{
-              padding: 10,
-              backgroundColor: "cyan",
-              width: 50,
-              height: 60,
-              top: 10,
-              left: 10,
-            }}
-          ></View>
-        </Animated.View>
-      </View>
-      {/* <Text>hi</Text> */}
+    <View
+      style={{
+        padding: 10,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        width: 50,
+        height: 60,
+        top: 10,
+        left: 10,
+        zIndex: 3,
+        opacity: 1,
+      }}
+    >
+      <View
+        {...panResponder.panHandlers}
+        style={{
+          width: 35,
+          height: 35,
+          top: 15,
+          left: 10,
+          backgroundColor: theme.ACCENT_COLOR,
+          borderRadius: 25,
+        }}
+      />
     </View>
   );
 }
