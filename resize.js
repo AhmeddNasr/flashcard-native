@@ -6,8 +6,8 @@ export default function Resize(props) {
   // const [dragging, setDragging] = useState(false);
   // const [topOffSet, setTopOffSet] = useState(0);
   // console.log(topOffSet);
-  let { maxHeight, maxWidth } = props.maxDimensions;
-  const pan = useRef(new Animated.ValueXY()).current;
+  // let { maxHeight, maxWidth } = props.maxDimensions;
+  console.log(props.maxDimensions);
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -22,36 +22,38 @@ export default function Resize(props) {
           props.setHeight(
             props.height + gestureState.dy < 90
               ? 90
-              : props.height + gestureState.dy > maxHeight
-              ? maxHeight
+              : props.height + gestureState.dy > props.maxDimensions.maxHeight
+              ? props.maxDimensions.maxHeight
               : props.height + gestureState.dy
           );
           props.setWidth(
             props.width + gestureState.dx < 100
               ? 100
-              : props.width + gestureState.dx > maxWidth
-              ? maxWidth
+              : props.width + gestureState.dx > props.maxDimensions.maxWidth
+              ? props.maxDimensions.maxWidth
               : props.width + gestureState.dx
           );
         },
         onPanResponderRelease: () => {
-          // Animated.flattenOffset();
+          let maxX = props.picture.width - props.width;
+          let maxY = props.picture.height - props.height;
+          console.log({ maxX, maxY });
+          props.setMaxCoordinates({
+            x: maxX,
+            y: maxY,
+          });
         },
         // onPanResponderTerminationRequest: (evt, gestureState) => true,
-        onPanResponderRelease: (evt, gestureState) => {
-          // The user has released all touches while this view is the
-          // responder. This typically means a gesture has succeeded
-          // pan.flattenOffset();
-        },
       }),
     [props.height, props.width, props.maxDimensions]
   );
 
   return (
     <View
+      {...panResponder.panHandlers}
       style={{
         padding: 10,
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0,0,0,0)",
         width: 50,
         height: 60,
         top: 10,
@@ -61,7 +63,6 @@ export default function Resize(props) {
       }}
     >
       <View
-        {...panResponder.panHandlers}
         style={{
           width: 35,
           height: 35,
