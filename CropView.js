@@ -1,33 +1,48 @@
 import React, { useState, useEffect } from "react";
-import { PanResponder, View, Animated, Text } from "react-native";
+import {
+  PanResponder,
+  View,
+  Animated,
+  Text,
+  ImageBackground,
+  Image,
+  Button,
+} from "react-native";
 import Resize from "./Resize";
 import theme from "./theme";
-import { BoxShadow } from "react-native-shadow";
+// import { BoxShadow } from "react-native-shadow";
 
 export default function Test() {
   // const [dragging, setDragging] = React.useState(false);
   // const [topOffSet, setTopOffSet] = React.useState(0);
   // console.log(topOffSet);
   const [picture, setPicture] = useState({});
-  const [height, setHeight] = useState(300);
-  const [width, setWidth] = useState(200);
+  const [height, setHeight] = useState(0);
+  const [width, setWidth] = useState(0);
   // const [cropBox, setCropBox] = useState({});
   const [maxCoordinates, setMaxCoordinates] = useState({ x: 0, y: 0 });
   const [maxDimensions, setMaxDimensions] = useState({});
+  const [cropActive, setCropActive] = useState(false);
+  const [cropReady, setCropReady] = useState(false);
 
-  const panX = React.useRef(new Animated.Value(0)).current;
-  const panY = React.useRef(new Animated.Value(0)).current;
+  const panX =
+    // : React.useRef(new Animated.Value(picture.x)).current;
+    React.useRef(new Animated.Value(0)).current;
+
+  const panY =
+    // : React.useRef(new Animated.Value(picture.y)).current;
+    React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setMaxDimensions({
       maxHeight: picture.height,
       maxWidth: picture.width,
     });
-    // console.log(picture.height - height);
     // setMaxCoordinates({
-    //   x: picture.width - width,
-    //   y: picture.height - height,
+    //   x: picture.x,
+    //   y: picture.y,
     // });
+    (picture && setWidth(picture.width)) || setHeight(picture.height);
   }, [picture]);
 
   const panResponder = React.useMemo(
@@ -90,60 +105,94 @@ export default function Test() {
     extrapolate: "clamp",
   });
 
+  console.log(picture.height);
   return (
-    <View style={{ flex: 1, backgroundColor: "black", padding: 50 }}>
+    <View style={{ flex: 1 }}>
       <View
         style={{
-          backgroundColor: "yellow",
           flex: 1,
-          width: 290,
-          height: 600,
-          // overflow: "hidden",
-        }}
-        onLayout={(event) => {
-          const layout = event.nativeEvent.layout;
-          // setMaxDimensions({
-          //   maxWidth: layout.width,
-          //   maxHeight: layout.height,
-          //   // pictureX: layout.x,
-          //   // pictureY: layout.y,
-          // });
-          setPicture({
-            height: layout.height,
-            width: layout.width,
-          });
+          // backgroundColor: theme.BACKGROUND_COLOR,
+          backgroundColor: "yellow",
+          padding: 20,
+          // width: 290,
+          // height: 600,
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <Animated.View
-          {...panResponder.panHandlers}
+        <ImageBackground
+          resizeMode="contain"
           style={{
-            backgroundColor: "rgba(255,255,255,0.6)",
-            borderColor: theme.TEXT_COLOR,
-            borderWidth: 2,
-            left: boundX,
-            top: boundY,
-            height: height,
-            width: width,
-            justifyContent: "flex-end",
-            alignItems: "flex-end",
+            width: "100%",
+            backgroundColor: "pink",
+            height: undefined,
+            width: "100%",
+            aspectRatio: 567 / 342,
           }}
-          // ref={cropView}
+          source={{
+            uri: "https://i0.wp.com/performdigi.com/wp-content/uploads/2019/10/Paragraph-writing-in-english-min.jpg?resize=567%2C342",
+          }}
           onLayout={(event) => {
             const layout = event.nativeEvent.layout;
+            setPicture({
+              height: layout.height,
+              width: layout.width,
+              x: layout.x,
+              y: layout.y,
+            });
+            setCropReady(true);
           }}
         >
-          <Resize
-            height={height}
-            setHeight={setHeight}
-            setWidth={setWidth}
-            width={width}
-            maxDimensions={maxDimensions}
-            setMaxCoordinates={setMaxCoordinates}
-            picture={picture}
-          />
-        </Animated.View>
+          {cropActive && cropReady && (
+            <Animated.View
+              {...panResponder.panHandlers}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.4)",
+                borderColor: theme.ACCENT_COLOR,
+                borderWidth: 2,
+                left: boundX,
+                top: boundY,
+                height: height,
+                width: width,
+                justifyContent: "flex-end",
+                alignItems: "flex-end",
+              }}
+              // ref={cropView}
+              // onLayout={(event) => {
+              //   const layout = event.nativeEvent.layout;
+              // }}
+            >
+              <Resize
+                height={height}
+                setHeight={setHeight}
+                setWidth={setWidth}
+                width={width}
+                maxDimensions={maxDimensions}
+                setMaxCoordinates={setMaxCoordinates}
+                picture={picture}
+              />
+            </Animated.View>
+          )}
+        </ImageBackground>
+
+        {/* <Text>hi</Text> */}
       </View>
-      {/* <Text>hi</Text> */}
+      <View
+        style={{
+          height: 150,
+          width: "100%",
+          padding: 30,
+          backgroundColor: theme.ACCENT_COLOR,
+        }}
+      >
+        <Text style={{ color: theme.TEXT_COLOR }}>
+          AAAAAAAAAAAAAAAAAAAAAAAA
+        </Text>
+        <Button
+          title="crop"
+          onPress={() => setCropActive(!cropActive)}
+        ></Button>
+      </View>
     </View>
   );
 }
