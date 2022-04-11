@@ -7,7 +7,9 @@ export default function Resize(props) {
   // const [topOffSet, setTopOffSet] = useState(0);
   // console.log(topOffSet);
   // let { maxHeight, maxWidth } = props.maxDimensions;
-  console.log(props.maxDimensions);
+  let minHeight = 30;
+  let minWidth = 80;
+  // console.log(props.maxDimensions);
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -20,15 +22,15 @@ export default function Resize(props) {
           // console.log(gestureState);
           // console.log(props.height - gestureState.dy);
           props.setHeight(
-            props.height + gestureState.dy < 90
-              ? 90
+            props.height + gestureState.dy < minHeight
+              ? minHeight
               : props.height + gestureState.dy > props.maxDimensions.maxHeight
               ? props.maxDimensions.maxHeight
               : props.height + gestureState.dy
           );
           props.setWidth(
-            props.width + gestureState.dx < 100
-              ? 100
+            props.width + gestureState.dx < minWidth
+              ? minWidth
               : props.width + gestureState.dx > props.maxDimensions.maxWidth
               ? props.maxDimensions.maxWidth
               : props.width + gestureState.dx
@@ -64,12 +66,11 @@ export default function Resize(props) {
     >
       <View
         style={{
-          width: 35,
-          height: 35,
-          top: 15,
-          left: 10,
+          width: 20,
+          height: 20,
+          top: 22,
+          left: 12,
           backgroundColor: theme.ACCENT_COLOR,
-          borderRadius: 25,
         }}
       />
     </View>
