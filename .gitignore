@@ -12,3 +12,8 @@ web-build/
 
 # macOS
 .DS_Store
+utils/IconButton.js
+drag.js
+drag.js
+resizeold.js
+drag.js
