@@ -213,7 +213,7 @@ export default function Test() {
               {...panResponder.panHandlers}
               style={{
                 backgroundColor: "rgba(255,255,255,0.4)",
-                borderColor: theme.ACCENT_COLOR,
+                borderColor: theme.PRIMARY_COLOR,
                 borderWidth: 2,
                 left: boundX,
                 top: boundY,
@@ -246,7 +246,7 @@ export default function Test() {
           height: 150,
           width: "100%",
           padding: 30,
-          backgroundColor: theme.ACCENT_COLOR,
+          backgroundColor: theme.PRIMARY_COLOR,
           flexDirection: "row",
         }}
       >

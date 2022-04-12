@@ -55,7 +55,7 @@ function MyAppBar({ navigation, back, route }) {
 
 const Styles = StyleSheet.create({
   AppBarContainer: {
-    backgroundColor: theme.ACCENT_COLOR,
+    backgroundColor: theme.PRIMARY_COLOR,
     padding: 15,
     paddingBottom: 0,
   },

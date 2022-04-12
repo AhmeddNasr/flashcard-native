@@ -70,7 +70,7 @@ export default function Resize(props) {
           height: 20,
           top: 22,
           left: 12,
-          backgroundColor: theme.ACCENT_COLOR,
+          backgroundColor: theme.PRIMARY_COLOR,
         }}
       />
     </View>
