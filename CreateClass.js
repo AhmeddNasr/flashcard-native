@@ -1,40 +1,62 @@
-import { Text, View, Button, StyleSheet, Alert, TextInput } from "react-native";
+import { Text, View, StyleSheet, Alert, TextInput } from "react-native";
+import { Button } from "@rneui/themed";
 import { MaterialIcons } from "@expo/vector-icons";
 // import styles from "./styles";
 import theme from "./theme";
 // import IconButton from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { Camera } from "expo-camera";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Formik } from "formik";
-// import * as SQLite from 'expo-sqlite'
+import * as SQLite from "expo-sqlite";
 
-// const db = SQLite.openDatabase('db.classes')
+const db = SQLite.openDatabase("db.db");
 
 function CreateClass({ navigation, route }) {
-  const __startCamera = () => {
-    Camera.requestCameraPermissionsAsync().then((result) => {
-      // console.log(result.status);
-      if (result.status == "granted") {
-        navigation.navigate("Camera");
-        return;
-      }
-      Alert.alert("Access denied");
+  // const __startCamera = () => {
+  //   Camera.requestCameraPermissionsAsync().then((result) => {
+  //     // console.log(result.status);
+  //     if (result.status == "granted") {
+  //       navigation.navigate("Camera");
+  //       return;
+  //     }
+  //     Alert.alert("Access denied");
+  //   });
+  // };
+  const [submitting, setSubmitting] = useState(false);
+  const [results, setResults] = useState({});
+  useEffect(() => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "CREATE TABLE IF NOT EXISTS classes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT)"
+      );
+    });
+  }, []);
+
+  const addClass = ({ name, description }) => {
+    if (submitting) {
+      return;
+    }
+    setSubmitting(true);
+    db.transaction((tx) => {
+      tx.executeSql(
+        "INSERT INTO classes (name, description) values (?, ?)",
+        [name, description],
+        (txObj, resultSet) => {
+          setSubmitting(false);
+          navigation.navigate("Class", { id: resultSet.insertId });
+        },
+        (txObj, error) => console.log(error)
+      );
     });
   };
-
-  // db.transaction(tx => {
-  //   tx.executeSql(
-  //     'CREATE TABLE IF NOT EXISTS classes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT)'
-  //   )
-  // })
 
   return (
     <SafeAreaView style={styles.container}>
       <Formik
         initialValues={{ name: "", description: "" }}
-        onSubmit={(values) => console.log(values)}
+        onSubmit={(values) => addClass(values)}
       >
         {({ handleChange, handleBlur, handleSubmit, values }) => (
           <View>
@@ -54,7 +76,16 @@ function CreateClass({ navigation, route }) {
               placeholder="Class Description"
               placeholderTextColor={theme.TEXT_COLOR_OPACITY}
             />
-            <Button onPress={handleSubmit} title="Submit" />
+            <Button
+              onPress={submitting ? handleSubmit : handleSubmit}
+              title="Submit"
+              loading={submitting}
+              buttonStyle={{
+                backgroundColor: theme.PRIMARY_COLOR,
+                borderRadius: 10,
+                padding: 10,
+              }}
+            />
           </View>
         )}
       </Formik>
@@ -74,6 +105,9 @@ function CreateClass({ navigation, route }) {
       {/* <TouchableHighlight onPress={() => setStartCamera(false)}>
         <Text style={{ color: theme.TEXT_COLOR }}>close camera</Text>
       </TouchableHighlight> */}
+      <Text style={{ color: theme.TEXT_COLOR }}>
+        {JSON.stringify(results, null, 2, 0)}
+      </Text>
     </SafeAreaView>
   );
 }
@@ -83,6 +117,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     width: "100%",
+    marginTop: 20,
+    borderColor: theme.PRIMARY_COLOR,
   },
   text: {
     color: theme.TEXT_COLOR,
@@ -99,10 +135,10 @@ const styles = StyleSheet.create({
   input: {
     color: theme.TEXT_COLOR,
     padding: 10,
-    borderColor: theme.ACCENT_COLOR,
+    borderColor: theme.PRIMARY_COLOR,
     borderWidth: 2,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderRadius: 10,
+    marginBottom: 16,
     minWidth: 200,
   },
 });
