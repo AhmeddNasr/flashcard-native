@@ -1,59 +1,41 @@
-import styles from "./styles";
-import { Text, View, Button, StyleSheet, FlatList } from "react-native";
-import Card from "./utils/Card";
+import { StyleSheet, Text, View } from "react-native";
+import * as SQLite from "expo-sqlite";
+import theme from "./theme";
+import { useEffect } from "react";
 
-const renderCard = ({ item }, navigation) => (
-  <View style={{ margin: 10 }}>
-    <Card
-      // onPress={() => {
-      //   console.log(navigation);
-      //   navigation.navigate("Profile", { id: item.key });
-      // }}
-      id={item.id}
-      navigation={navigation}
-      title="hi"
-    >
-      {item.name}
-    </Card>
-  </View>
-);
+const db = SQLite.openDatabase("db.db");
 
-const data = [
-  { name: "card 1", key: 1, id: 1 },
-  { name: "card 2", key: 2, id: 2 },
-  { name: "card 3", key: 3, id: 3 },
-  { name: "card 4", key: 4, id: 4 },
-  { name: "card 5", key: 5, id: 5 },
-];
+function ClassScreen({ navigation, route }) {
+  useEffect(() => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM cards WHERE class_id = ?",
+        [route.params.id],
+        (txObj, resultSet) => {
+          if (resultSet.rows.length === 0) {
+            console.log("empty class!");
+            navigation.navigate("Edit", { id: route.params.id });
+          }
+        },
+        (txObj, error) => console.log(error)
+      );
+    });
+  }, []);
 
-function ClassScreen({ navigation }) {
   return (
-    <View
-      style={{
-        ...styles.darkBackground,
-        ...classStyle.container,
-      }}
-    >
-      <FlatList
-        style={classStyle.cardContainer}
-        data={data}
-        renderItem={(item) => renderCard(item, navigation)}
-        // showsVerticalScrollIndicator={false}
-      />
-      {/* <Button title="Go to profile" onPress={() => console.log("hi")} /> */}
+    <View style={styles.container}>
+      <Text>this is {route.params.id} profile</Text>
     </View>
   );
 }
 
-const classStyle = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
+    backgroundColor: theme.BACKGROUND_COLOR,
     flex: 1,
-    padding: 10,
   },
-  cardContainer: {
-    flex: 1,
-    // backgroundColor: "pink",
-    padding: 5,
+  text: {
+    color: theme.TEXT_COLOR,
   },
 });
 
