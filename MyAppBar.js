@@ -7,9 +7,19 @@ import styles from "./styles";
 function MyAppBar({ navigation, back, route }) {
   //only show nav buttons in these screens
   const showNavigationButtonsScreens = ["Home", "Create"];
+  //TODO show class name instead of app name in these screens
+  // const showClassName = ["Edit", "Class"];
+
+  if (route.params && route.params.id) {
+  }
+
+  const appBarColor =
+    route.name === "Edit" ? theme.BACKGROUND_COLOR : theme.PRIMARY_COLOR;
 
   return (
-    <SafeAreaView style={Styles.AppBarContainer}>
+    <SafeAreaView
+      style={{ ...Styles.AppBarContainer, backgroundColor: appBarColor }}
+    >
       <View style={Styles.AppBarLogoContainer}>
         {back && (
           <TouchableOpacity
@@ -23,6 +33,7 @@ function MyAppBar({ navigation, back, route }) {
             />
           </TouchableOpacity>
         )}
+        {/* TODO show class name instead of app name */}
         <Text style={Styles.AppBarLogo}>KosomCards</Text>
         <TouchableOpacity>
           <Ionicons
@@ -55,7 +66,7 @@ function MyAppBar({ navigation, back, route }) {
 
 const Styles = StyleSheet.create({
   AppBarContainer: {
-    backgroundColor: theme.PRIMARY_COLOR,
+    // backgroundColor: theme.PRIMARY_COLOR,
     padding: 15,
     paddingBottom: 0,
   },
