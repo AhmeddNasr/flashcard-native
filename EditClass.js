@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, TextInput, FlatList } from "react-native";
+import { Text, View, StyleSheet, TextInput } from "react-native";
 import theme from "./theme";
 import * as SQLite from "expo-sqlite";
 import { useFormik, FormikProvider, FieldArray, FastField } from "formik";
 import { Button } from "@rneui/themed";
-import {
-  KeyboardAwareFlatList,
-  KeyboardAwareScrollView,
-} from "react-native-keyboard-aware-scroll-view";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { MaterialIcons } from "@expo/vector-icons";
+import InputWithImage from "./utils/InputWithImage";
 
 export default function EditClass({ route }) {
   const [cardsData, setCardsData] = useState([{ id: -1 }]);
@@ -58,6 +57,7 @@ export default function EditClass({ route }) {
     });
   }, []);
 
+  //
   useEffect(() => {
     setCardsData([
       {
@@ -105,6 +105,7 @@ export default function EditClass({ route }) {
     <KeyboardAwareScrollView>
       <View style={styles.container}>
         <FormikProvider value={formik}>
+          {/* class info section */}
           <View style={styles.header}>
             <Text style={styles.header_text}>Class Info</Text>
           </View>
@@ -137,41 +138,24 @@ export default function EditClass({ route }) {
               // if (formik.values.cards.length === 0) {
               //   arrayHelpers.push({});
               // }
-              return formik.values.cards.map((term, index) => {
+              return formik.values.cards.map((item, index) => {
                 let card = `cards.${index}`;
+                //TODO DRY
                 return (
-                  <View style={styles.card_block} key={card.id}>
-                    <TextInput
-                      onChangeText={formik.handleChange(
-                        `${card}.question_text`
-                      )}
-                      onBlur={formik.handleBlur(`${card}.question_text`)}
-                      value={formik.values.cards[index].question_text}
-                      style={{
-                        ...styles.input,
-                        borderColor:
-                          index % 2 !== 0
-                            ? theme.TEXT_COLOR_OPACITY
-                            : theme.PRIMARY_COLOR,
-                      }}
-                      multiline
-                      placeholder="Question"
-                      placeholderTextColor={theme.TEXT_COLOR_OPACITY}
+                  <View style={styles.card_block} key={item.id}>
+                    <InputWithImage
+                      type="question"
+                      index={index}
+                      formik={formik}
+                      item={item}
+                      card={card}
                     />
-                    <TextInput
-                      onChangeText={formik.handleChange(`${card}.answer_text`)}
-                      onBlur={formik.handleBlur(`${card}.answer_text`)}
-                      value={formik.values.cards[index].answer_text}
-                      style={{
-                        ...styles.input,
-                        borderColor:
-                          index % 2 !== 0
-                            ? theme.TEXT_COLOR_OPACITY
-                            : theme.PRIMARY_COLOR,
-                      }}
-                      multiline
-                      placeholder="Answer"
-                      placeholderTextColor={theme.TEXT_COLOR_OPACITY}
+                    <InputWithImage
+                      type="answer"
+                      index={index}
+                      formik={formik}
+                      item={item}
+                      card={card}
                     />
                   </View>
                 );
@@ -226,6 +210,9 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: theme.BACKGROUND_COLOR,
   },
+  input_noborder: {
+    borderWidth: 0,
+  },
   header: {
     backgroundColor: theme.PRIMARY_COLOR,
     marginTop: 8,
@@ -238,7 +225,7 @@ const styles = StyleSheet.create({
     // paddingRight: 5,
     // paddingLeft: 5,
     // marginTop: 15,
-    marginBottom: 15,
+    marginBottom: 20,
     // backgroundColor: theme.PRIMARY_COLOR,
   },
 });
