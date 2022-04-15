@@ -26,13 +26,24 @@ function CreateClass({ navigation, route }) {
   // };
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState({});
-  useEffect(() => {
+  // useEffect(() => {
+  //   db.transaction((tx) => {
+
+  //   });
+  // }, []);
+
+  // for testing
+  const clearDb = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS classes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT)"
+        "DROP TABLE cards",
+        (txObj, resultSet) => {
+          console.log(resultSet);
+        },
+        (txObj, error) => console.log(error)
       );
     });
-  }, []);
+  };
 
   const addClass = ({ name, description }) => {
     if (submitting) {
@@ -78,7 +89,7 @@ function CreateClass({ navigation, route }) {
             />
             <Button
               onPress={submitting ? handleSubmit : handleSubmit}
-              title="Submit"
+              title="Next"
               loading={submitting}
               buttonStyle={{
                 backgroundColor: theme.PRIMARY_COLOR,
@@ -89,6 +100,7 @@ function CreateClass({ navigation, route }) {
           </View>
         )}
       </Formik>
+      <Button title="Clear" onPress={clearDb} />
       {/* {console.log(route.params)} */}
       {/* <TouchableHighlight
         style={CreateStyles.iconButton}
