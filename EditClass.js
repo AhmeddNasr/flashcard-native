@@ -57,7 +57,6 @@ export default function EditClass({ route }) {
     });
   }, []);
 
-  //
   useEffect(() => {
     setCardsData([
       {
@@ -102,7 +101,13 @@ export default function EditClass({ route }) {
   }
 
   return (
-    <KeyboardAwareScrollView>
+    <KeyboardAwareScrollView
+      extraHeight={25}
+      extraScrollHeight={25}
+      scrollEnabled
+      enableAutomaticScroll
+      enableOnAndroid
+    >
       <View style={styles.container}>
         <FormikProvider value={formik}>
           {/* class info section */}
@@ -163,7 +168,6 @@ export default function EditClass({ route }) {
             }}
           />
           {/* {cardsData.length > 0 && renderCards(formik.values.cards)} */}
-
           <Button
             onPress={submitting ? handleSubmit : formik.handleSubmit}
             title="Submit"
@@ -210,9 +214,6 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: theme.BACKGROUND_COLOR,
   },
-  input_noborder: {
-    borderWidth: 0,
-  },
   header: {
     backgroundColor: theme.PRIMARY_COLOR,
     marginTop: 8,
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     // paddingRight: 5,
     // paddingLeft: 5,
     // marginTop: 15,
-    marginBottom: 20,
+    marginBottom: 40,
     // backgroundColor: theme.PRIMARY_COLOR,
   },
 });
