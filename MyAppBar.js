@@ -9,12 +9,14 @@ function MyAppBar({ navigation, back, route }) {
   const showNavigationButtonsScreens = ["Home", "Create"];
   //TODO show class name instead of app name in these screens
   // const showClassName = ["Edit", "Class"];
+  const darkAppBarScreens = ["Edit", "Class"];
 
   if (route.params && route.params.id) {
   }
 
-  const appBarColor =
-    route.name === "Edit" ? theme.BACKGROUND_COLOR : theme.PRIMARY_COLOR;
+  const appBarColor = darkAppBarScreens.includes(route.name)
+    ? theme.BACKGROUND_COLOR
+    : theme.PRIMARY_COLOR;
 
   return (
     <SafeAreaView
