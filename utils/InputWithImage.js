@@ -47,77 +47,62 @@ export default function InputWithImage(props) {
     }
   };
 
+  const captureImage = async () => {};
+
   // const handleImageIconPress = () => {
   //   setModalActive(true);
   // };
 
   return (
-    <View style={{ opacity: active ? 1 : 0.8 }}>
-      <View
-        style={{
-          ...styles.input_block,
-          borderColor:
-            index % 2 !== 0 ? theme.TEXT_COLOR_OPACITY : theme.PRIMARY_COLOR,
-        }}
-      >
-        {imageValue && (
-          <Image
-            style={styles.card_image}
-            source={{
-              uri: imageValue,
-            }}
-          />
-        )}
-
-        <View style={styles.text_input_block}>
-          <FastField
-            component={TextInput}
-            onChangeText={formik.handleChange(`${card}.${type}_text`)}
-            onBlur={handleBlur}
-            value={value}
-            style={{
-              ...styles.input,
-              ...styles.input_noborder,
-              flex: 1,
-            }}
-            multiline
-            placeholder={type === "question" ? "Question" : "Answer"}
-            placeholderTextColor={theme.TEXT_COLOR_OPACITY}
-            onFocus={() => setActive(true)}
-          />
-          <TouchableOpacity>
-            <MaterialIcons
-              name="image"
-              style={{
-                ...styles.icon,
-              }}
-              onPress={uploadImage}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-      {/* <View style={styles.centeredView}>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalActive}
-          onRequestClose={() => {
-            setModalActive(!modalActive);
+    <View>
+      <View style={{ opacity: active ? 1 : 0.8 }}>
+        <View
+          style={{
+            ...styles.input_block,
+            borderColor:
+              index % 2 !== 0 ? theme.TEXT_COLOR_OPACITY : theme.PRIMARY_COLOR,
           }}
         >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={{ color: theme.TEXT_COLOR }}>Hello World!</Text>
-              <Pressable
-                style={[styles.button, styles.buttonClose]}
-                onPress={() => setModalActive(!modalActive)}
-              >
-                <Text style={styles.textStyle}>Hide Modal</Text>
-              </Pressable>
-            </View>
+          {imageValue && (
+            <Image
+              style={styles.card_image}
+              source={{
+                uri: imageValue,
+              }}
+            />
+          )}
+
+          <View style={styles.text_input_block}>
+            <FastField
+              component={TextInput}
+              onChangeText={formik.handleChange(`${card}.${type}_text`)}
+              onBlur={handleBlur}
+              value={value}
+              style={{
+                ...styles.input,
+                ...styles.input_noborder,
+                flex: 1,
+              }}
+              multiline
+              placeholder={type === "question" ? "Question" : "Answer"}
+              placeholderTextColor={theme.TEXT_COLOR_OPACITY}
+              onFocus={() => setActive(true)}
+            />
+            <TouchableOpacity>
+              <MaterialIcons
+                name="image"
+                style={{
+                  ...styles.icon,
+                }}
+                onPress={uploadImage}
+              />
+            </TouchableOpacity>
           </View>
-        </Modal>
-      </View> */}
+        </View>
+      </View>
+      <Text style={{ color: theme.TEXT_COLOR_OPACITY, padding: 5 }}>
+        {type}
+      </Text>
     </View>
   );
 }
@@ -133,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 15,
-    marginTop: 10,
+    marginTop: 15,
   },
   input: {
     color: theme.TEXT_COLOR,
