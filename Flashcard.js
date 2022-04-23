@@ -12,41 +12,37 @@ export default function Flashcard(props) {
   return (
     <View style={styles.card}>
       <KeyboardAwareScrollView>
-        {/* Front side */}
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {props.frontVisible && (
-            <View>
-              {questionImage && (
-                <Image
-                  source={{
-                    uri: questionImage,
-                  }}
-                  style={styles.image}
-                />
-              )}
-              <Text style={{ color: theme.TEXT_COLOR }}>{question}</Text>
-            </View>
-          )}
-          {/* Back side */}
-          {!props.frontVisible && (
-            <View>
-              {answerImage && (
-                <Image
-                  source={{
-                    uri: answerImage,
-                  }}
-                  style={styles.image}
-                />
-              )}
-              <Text style={{ color: theme.TEXT_COLOR }}>{answer}</Text>
-            </View>
-          )}
+        <View style={styles.innerCard}>
+          {/* Front side */}
+          <View>
+            {props.frontVisible && (
+              <View>
+                {questionImage && (
+                  <Image
+                    source={{
+                      uri: questionImage,
+                    }}
+                    style={styles.image}
+                  />
+                )}
+                <Text style={styles.text}>{question}</Text>
+              </View>
+            )}
+            {/* Back side */}
+            {!props.frontVisible && (
+              <View>
+                {answerImage && (
+                  <Image
+                    source={{
+                      uri: answerImage,
+                    }}
+                    style={styles.image}
+                  />
+                )}
+                <Text style={styles.text}>{answer}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </KeyboardAwareScrollView>
     </View>
@@ -60,9 +56,22 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     maxHeight: 400,
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  innerCard: {
+    flex: 1,
+    minHeight: 350,
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
     width: 300,
     height: 200,
+  },
+  text: {
+    margin: 10,
+    color: theme.TEXT_COLOR,
+    textAlign: "center",
   },
 });
