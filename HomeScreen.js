@@ -1,6 +1,9 @@
 import styles from "./styles";
 import { Text, View, Button, StyleSheet, FlatList } from "react-native";
 import Card from "./utils/Card";
+import { useState, useEffect } from "react";
+import * as SQLite from "expo-sqlite";
+const db = SQLite.openDatabase("db.db");
 
 const renderCard = ({ item }, navigation) => (
   <View style={{ margin: 10 }}>
@@ -18,15 +21,38 @@ const renderCard = ({ item }, navigation) => (
   </View>
 );
 
-const data = [
-  { name: "card 1", key: 1, id: 1 },
-  { name: "card 2", key: 2, id: 2 },
-  { name: "card 3", key: 3, id: 3 },
-  { name: "card 4", key: 4, id: 4 },
-  { name: "card 5", key: 5, id: 5 },
-];
+// const data = [
+//   { name: "card 1", key: 1, id: 1 },
+//   { name: "card 2", key: 2, id: 2 },
+//   { name: "card 3", key: 3, id: 3 },
+//   { name: "card 4", key: 4, id: 4 },
+//   { name: "card 5", key: 5, id: 5 },
+// ];
 
 function HomeScreen({ navigation }) {
+  const [classes, setClasses] = useState([]);
+  const [ready, setReady] = useState(true);
+
+  useEffect(() => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM classes",
+        [],
+        (_, resultSet) => {
+          if (resultSet.rows._array.length === 0) {
+            return navigation.navigate("Create");
+          }
+          setClasses(resultSet.rows._array);
+          // console.log(resultSet);
+          setReady(true);
+        },
+        (_, error) => {
+          console.log("error", error);
+        }
+      );
+    });
+  }, []);
+
   return (
     <View
       style={{
@@ -36,7 +62,7 @@ function HomeScreen({ navigation }) {
     >
       <FlatList
         style={classStyle.cardContainer}
-        data={data}
+        data={classes}
         renderItem={(item) => renderCard(item, navigation)}
         // showsVerticalScrollIndicator={false}
       />
