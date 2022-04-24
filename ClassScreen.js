@@ -2,11 +2,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as SQLite from "expo-sqlite";
 import theme from "./theme";
 import { useEffect, useState } from "react";
-import { Button } from "@rneui/themed";
 import Flashcard from "./Flashcard";
 import { MaterialIcons } from "@expo/vector-icons";
 import FlashcardControl from "./utils/FlashcardControl";
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const db = SQLite.openDatabase("db.db");
 
@@ -16,77 +14,26 @@ function ClassScreen({ navigation, route }) {
   const [cardData, setCardData] = useState([]);
   const [originalCardData, setOriginalCardData] = useState([]);
   const [ready, setReady] = useState(false);
-  //TODO
-  // useEffect(() => {
-  //   db.transaction((tx) => {
-  //     tx.executeSql(
-  //       "SELECT * FROM cards WHERE class_id = ?",
-  //       [route.params.id],
-  //       (txObj, resultSet) => {
-  //         if (resultSet.rows.length === 0) {
-  //           console.log("empty class!");
-  //           // navigation.navigate("Edit", { id: route.params.id });
-  //         }
-  //       },
-  //       (txObj, error) => console.log(error)
-  //     );
-  //   });
-  // }, []);
 
+  // fetch cards from database
   useEffect(() => {
-    let cardData = [
-      {
-        question_text: `question 5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`,
-        answer_text: "answer 5",
-      },
-      {
-        question_text: "question 1",
-        question_image:
-          "https://static.remove.bg/remove-bg-web/5cc729f2c60683544f035949b665ce17223fd2ec/assets/start_remove-c851bdf8d3127a24e2d137a55b1b427378cd17385b01aec6e59d5d4b5f39d2ec.png",
-        answer_text: "answer 1",
-      },
-      {
-        question_text: "question 1",
-        answer_text: "answer 1",
-        answer_image:
-          "https://d5nunyagcicgy.cloudfront.net/external_assets/hero_examples/hair_beach_v391182663/original.jpeg",
-      },
-      {
-        question_text: "question 1",
-        question_image:
-          "https://helpx.adobe.com/content/dam/help/en/stock/how-to/visual-reverse-image-search/jcr_content/main-pars/image/visual-reverse-image-search-v2_intro.jpg",
-        answer_text: "answer 1",
-        answer_image:
-          "https://assets-global.website-files.com/5a016d51240da900013d2ea2/5fc8e1f4bc8a02aecf06f035_eyeem-23716958-121079333-(1)%20(1).png",
-      },
-      {
-        question_text: "question 12",
-        answer_text: "answer 2",
-      },
-      {
-        question_text: "question 3",
-        answer_text: "answer 3",
-      },
-      {
-        question_text: "question 4",
-        answer_text: "answer 4",
-      },
-    ];
-    setOriginalCardData([...cardData]);
-    setCardData(cardData);
-    setReady(true);
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM cards WHERE class_id = ?",
+        [route.params.id],
+        (txObj, resultSet) => {
+          if (resultSet.rows.length === 0) {
+            console.log("empty class!");
+            navigation.navigate("Edit", { id: route.params.id });
+          }
+          let cardData = resultSet.rows._array;
+          setOriginalCardData([...cardData]);
+          setCardData(cardData);
+          setReady(true);
+        },
+        (txObj, error) => console.log(error)
+      );
+    });
   }, []);
 
   //TODO repeatcards?
@@ -172,7 +119,10 @@ function ClassScreen({ navigation, route }) {
           />
         </FlashcardControl>
       </View>
-      <Pressable style={{ flex: 1, maxHeight: 50 }}>
+      <Pressable
+        style={{ flex: 1, maxHeight: 50 }}
+        onPress={() => navigation.navigate("Edit", { id: route.params.id })}
+      >
         <View style={styles.viewMoreContainer}>
           <Text style={styles.viewMoreText}>Customize Flashcard playlist</Text>
         </View>
@@ -191,7 +141,6 @@ const styles = StyleSheet.create({
   },
   controlContainer: {
     flex: 1,
-    // backgroundColor: theme.PRIMARY_COLOR,
     maxHeight: 140,
     flexDirection: "row",
     justifyContent: "space-between",
