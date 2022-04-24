@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Text, View, StyleSheet, TextInput } from "react-native";
 import theme from "./theme";
 import * as SQLite from "expo-sqlite";
@@ -13,7 +13,6 @@ export default function EditClass({ route }) {
   const [classData, setClassData] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [listReady, setListReady] = useState(false);
-  const [listArray, setListArray] = useState([]);
   const db = SQLite.openDatabase("db.db");
 
   // useEffect(() => {
@@ -31,16 +30,22 @@ export default function EditClass({ route }) {
   //   });
   // }, []);
 
+  const latestId = useRef(-2);
+  const fieldArrayRef = useRef(null);
+
   useEffect(() => {
     db.transaction((tx) => {
-      // tx.executeSql(
-      //   "SELECT * FROM cards WHERE class_id = ?",
-      //   [route.params.id],
-      //   (_, resultSet) => {
-      //     setCardsData(resultSet.rows._array);
-      //   },
-      //   (_, error) => console.log(error)
-      // );
+      tx.executeSql(
+        "SELECT * FROM cards WHERE class_id = ?",
+        [route.params.id],
+        (_, resultSet) => {
+          if (resultSet.rows._array.length === 0) {
+            return;
+          }
+          setCardsData(resultSet.rows._array);
+        },
+        (_, error) => console.log(error)
+      );
       tx.executeSql(
         "SELECT * FROM classes WHERE id = ?",
         [route.params.id],
@@ -57,42 +62,63 @@ export default function EditClass({ route }) {
     });
   }, []);
 
-  useEffect(() => {
-    setCardsData([
-      {
-        question_text: "question 1",
-        answer_text: "answer 1",
-        id: "1",
-      },
-      {
-        question_text: "question 1",
-        answer_text: "answer 1",
-        id: "2",
-      },
-      {
-        question_text: "question 1",
-        answer_text: "answer 1",
-        id: "3",
-      },
-      {
-        question_text: "question 1",
-        answer_text: "answer 1",
-        id: "4",
-      },
-    ]);
-  }, []);
+  const handleSubmit = (values) => {
+    let insertArray = [];
+    let updateArray = [];
+    values.cards.forEach((item) => {
+      if (item.id < 0) {
+        insertArray.push(item);
+      } else {
+        updateArray.push(item);
+      }
+    });
+    handleSubmitDb(insertArray, updateArray);
+  };
+
+  const handleSubmitDb = (insertArray, updateArray) => {
+    db.transaction((tx) => {
+      insertArray.forEach((card) => {
+        tx.executeSql(
+          "INSERT INTO cards (question_text, question_image, answer_text, answer_image, class_id) values (?, ?, ?, ?, ?)",
+          [
+            card.question_text ? card.question_text : null,
+            card.question_image ? card.question_image : null,
+            card.answer_text ? card.answer_text : null,
+            card.answer_image ? card.answer_image : null,
+            route.params.id,
+          ]
+          // (txObj, resultSet) => console.log("insert resultset: ", resultSet),
+          // (txObj, error) => console.log("insert error", error)
+        );
+      });
+      updateArray.forEach((card) => {
+        tx.executeSql(
+          "UPDATE cards SET question_text = ?, question_image = ?, answer_text = ?, answer_image = ? WHERE id = ?",
+          [
+            card.question_text ? card.question_text : null,
+            card.question_image ? card.question_image : null,
+            card.answer_text ? card.answer_text : null,
+            card.answer_image ? card.answer_image : null,
+            card.id,
+          ]
+          // (txObj, resultSet) => console.log("update resultset: ", resultSet),
+          // (txObj, error) => console.log("update error", error)
+        );
+      });
+    });
+  };
 
   const formik = useFormik({
     validateOnChange: false,
     validateOnBlur: false,
     initialValues: {
-      // name: classData.name,
-      // description: classData.description,
+      name: classData.name,
+      description: classData.description,
       cards: cardsData,
     },
     enableReinitialize: true,
     onSubmit: (values) => {
-      return;
+      handleSubmit(values);
     },
   });
 
@@ -109,6 +135,7 @@ export default function EditClass({ route }) {
       enableOnAndroid
     >
       <View style={styles.container}>
+        {/* form */}
         <FormikProvider value={formik}>
           {/* class info section */}
           <View style={styles.header}>
@@ -143,9 +170,9 @@ export default function EditClass({ route }) {
               // if (formik.values.cards.length === 0) {
               //   arrayHelpers.push({});
               // }
+              fieldArrayRef.current = arrayHelpers;
               return formik.values.cards.map((item, index) => {
                 let card = `cards.${index}`;
-                //TODO DRY
                 return (
                   <View style={styles.card_block} key={item.id}>
                     <InputWithImage
@@ -167,18 +194,38 @@ export default function EditClass({ route }) {
               });
             }}
           />
-          {/* {cardsData.length > 0 && renderCards(formik.values.cards)} */}
-          <Button
-            onPress={submitting ? handleSubmit : formik.handleSubmit}
-            title="Submit"
-            loading={submitting}
-            buttonStyle={{
-              backgroundColor: theme.PRIMARY_COLOR,
-              borderRadius: 10,
-              padding: 10,
-              marginTop: 15,
-            }}
-          />
+
+          {/* submit and add card buttons */}
+          <View style={styles.button_group}>
+            <Button
+              onPress={() => {
+                fieldArrayRef.current.push({ id: latestId.current });
+                latestId.current = latestId.current - 1;
+              }}
+              title="Add Card"
+              buttonStyle={{
+                backgroundColor: theme.PRIMARY_COLOR,
+                borderRadius: 10,
+                marginRight: 5,
+                flex: 1,
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+              }}
+            />
+            <Button
+              onPress={submitting ? null : formik.handleSubmit}
+              title="Submit"
+              loading={submitting}
+              buttonStyle={{
+                backgroundColor: theme.PRIMARY_COLOR,
+                borderRadius: 10,
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
+              }}
+            />
+          </View>
+
+          {/* debugging */}
           <Text style={{ color: theme.TEXT_COLOR }}>
             {JSON.stringify(formik.values, null, 2, 0)}
           </Text>
@@ -226,7 +273,12 @@ const styles = StyleSheet.create({
     // paddingRight: 5,
     // paddingLeft: 5,
     // marginTop: 15,
-    marginBottom: 40,
+    marginBottom: 30,
     // backgroundColor: theme.PRIMARY_COLOR,
+  },
+  button_group: {
+    flexDirection: "row",
+    flex: 1,
+    justifyContent: "center",
   },
 });
