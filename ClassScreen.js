@@ -1,10 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as SQLite from "expo-sqlite";
 import theme from "./theme";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import Flashcard from "./Flashcard";
 import { MaterialIcons } from "@expo/vector-icons";
 import FlashcardControl from "./utils/FlashcardControl";
+import { useIsFocused } from "@react-navigation/native";
 
 const db = SQLite.openDatabase("db.db");
 
@@ -14,6 +15,9 @@ function ClassScreen({ navigation, route }) {
   const [cardData, setCardData] = useState([]);
   const [originalCardData, setOriginalCardData] = useState([]);
   const [ready, setReady] = useState(false);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const isFocused = useIsFocused();
 
   // fetch cards from database
   useEffect(() => {
@@ -34,7 +38,7 @@ function ClassScreen({ navigation, route }) {
         (txObj, error) => console.log(error)
       );
     });
-  }, []);
+  }, [isFocused]);
 
   //TODO repeatcards?
   const incrementFlashcardIndex = (correct) => {
