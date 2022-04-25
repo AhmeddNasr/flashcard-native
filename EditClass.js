@@ -1,34 +1,26 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, View, StyleSheet, TextInput } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import theme from "./theme";
 import * as SQLite from "expo-sqlite";
 import { useFormik, FormikProvider, FieldArray, FastField } from "formik";
 import { Button } from "@rneui/themed";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { MaterialIcons } from "@expo/vector-icons";
+// import { useIsFocused } from "@react-navigation/native";
 import InputWithImage from "./utils/InputWithImage";
 
-export default function EditClass({ route }) {
+export default function EditClass({ route, navigation }) {
   const [cardsData, setCardsData] = useState([{ id: -1 }]);
   const [classData, setClassData] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [listReady, setListReady] = useState(false);
   const db = SQLite.openDatabase("db.db");
-
-  // useEffect(() => {
-  //   db.transaction((tx) => {
-  //     tx.executeSql(
-  //       "INSERT INTO cards (question_text, answer_text, class_id) values ('first question', 'first answer', (?))",
-  //       [route.params.id],
-  //       (txObj, resultSet) => {
-  //         console.log(resultSet);
-  //       },
-  //       (txObj, error) => {
-  //         console.log(error);
-  //       }
-  //     );
-  //   });
-  // }, []);
 
   const latestId = useRef(-2);
   const fieldArrayRef = useRef(null);
@@ -100,8 +92,11 @@ export default function EditClass({ route }) {
             card.answer_text ? card.answer_text : null,
             card.answer_image ? card.answer_image : null,
             card.id,
-          ]
-          // (txObj, resultSet) => console.log("update resultset: ", resultSet),
+          ],
+          (txObj, resultSet) => {
+            setSubmitting(false);
+            navigation.navigate("Class", { id: route.params.id });
+          }
           // (txObj, error) => console.log("update error", error)
         );
       });
@@ -118,6 +113,7 @@ export default function EditClass({ route }) {
     },
     enableReinitialize: true,
     onSubmit: (values) => {
+      setSubmitting(true);
       handleSubmit(values);
     },
   });
@@ -197,7 +193,39 @@ export default function EditClass({ route }) {
 
           {/* submit and add card buttons */}
           <View style={styles.button_group}>
-            <Button
+            <TouchableOpacity
+              disabled={submitting}
+              style={{
+                ...styles.button,
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+                flex: 1,
+                marginRight: 10,
+              }}
+              onPress={submitting ? null : formik.handleSubmit}
+            >
+              {submitting ? (
+                <ActivityIndicator color={theme.TEXT_COLOR} />
+              ) : (
+                <Text style={styles.button_text}>Submit</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                ...styles.button,
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
+                flex: 3,
+              }}
+              onPress={() => {
+                fieldArrayRef.current.push({ id: latestId.current });
+                latestId.current = latestId.current - 1;
+              }}
+            >
+              <Text style={styles.button_text}>Add Card</Text>
+            </TouchableOpacity>
+
+            {/* <Button
               onPress={() => {
                 fieldArrayRef.current.push({ id: latestId.current });
                 latestId.current = latestId.current - 1;
@@ -222,7 +250,7 @@ export default function EditClass({ route }) {
                 borderTopLeftRadius: 0,
                 borderBottomLeftRadius: 0,
               }}
-            />
+            /> */}
           </View>
 
           {/* debugging */}
@@ -267,18 +295,26 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   card_block: {
-    // borderColor: theme.PRIMARY_COLOR,
-    // borderWidth: 2,
-    // borderRadius: 15,
-    // paddingRight: 5,
-    // paddingLeft: 5,
-    // marginTop: 15,
     marginBottom: 30,
-    // backgroundColor: theme.PRIMARY_COLOR,
   },
   button_group: {
     flexDirection: "row",
     flex: 1,
     justifyContent: "center",
+    // alignItems: "stretch",
+    marginBottom: 30,
+  },
+  button: {
+    backgroundColor: theme.PRIMARY_COLOR,
+    borderRadius: 10,
+    padding: 10,
+    paddingTop: 15,
+    paddingBottom: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  button_text: {
+    color: theme.TEXT_COLOR,
+    textAlign: "center",
   },
 });
