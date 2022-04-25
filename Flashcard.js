@@ -1,5 +1,12 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { useState } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  Animated,
+} from "react-native";
+import { useState, useRef } from "react";
 import theme from "./theme";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -8,6 +15,9 @@ export default function Flashcard(props) {
   const questionImage = props.data.question_image;
   const answer = props.data.answer_text;
   const answerImage = props.data.answer_image;
+
+  // TODO
+  // const flipAnimatedValue = useRef(new Animated.Value(0)).current;
 
   return (
     <View style={styles.card}>
@@ -25,7 +35,7 @@ export default function Flashcard(props) {
                     style={styles.image}
                   />
                 )}
-                <Text style={styles.text}>{question}</Text>
+                <Text style={styles.text}>{question ? question : ""}</Text>
               </View>
             )}
             {/* Back side */}
@@ -39,7 +49,7 @@ export default function Flashcard(props) {
                     style={styles.image}
                   />
                 )}
-                <Text style={styles.text}>{answer}</Text>
+                <Text style={styles.text}>{answer ? answer : ""}</Text>
               </View>
             )}
           </View>
