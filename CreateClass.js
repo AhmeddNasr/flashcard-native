@@ -14,36 +14,7 @@ import * as SQLite from "expo-sqlite";
 const db = SQLite.openDatabase("db.db");
 
 function CreateClass({ navigation, route }) {
-  // const __startCamera = () => {
-  //   Camera.requestCameraPermissionsAsync().then((result) => {
-  //     // console.log(result.status);
-  //     if (result.status == "granted") {
-  //       navigation.navigate("Camera");
-  //       return;
-  //     }
-  //     Alert.alert("Access denied");
-  //   });
-  // };
   const [submitting, setSubmitting] = useState(false);
-  const [results, setResults] = useState({});
-  // useEffect(() => {
-  //   db.transaction((tx) => {
-
-  //   });
-  // }, []);
-
-  // for testing
-  const clearDb = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "DROP TABLE cards",
-        (txObj, resultSet) => {
-          console.log(resultSet);
-        },
-        (txObj, error) => console.log(error)
-      );
-    });
-  };
 
   const addClass = ({ name, description }) => {
     if (submitting) {
@@ -56,7 +27,7 @@ function CreateClass({ navigation, route }) {
         [name, description],
         (txObj, resultSet) => {
           setSubmitting(false);
-          navigation.navigate("Class", { id: resultSet.insertId });
+          navigation.navigate("Edit", { id: resultSet.insertId });
         },
         (txObj, error) => console.log(error)
       );
@@ -100,26 +71,6 @@ function CreateClass({ navigation, route }) {
           </View>
         )}
       </Formik>
-      <Button title="Clear" onPress={clearDb} />
-      {/* {console.log(route.params)} */}
-      {/* <TouchableHighlight
-        style={CreateStyles.iconButton}
-        underlayColor="rgba(155,155,155,0.5)"
-        activeOpacity={0.5}
-        onPress={() => __startCamera()}
-      >
-        <MaterialIcons
-          name="insert-photo"
-          underlayColor="#042417"
-          style={{ ...CreateStyles.text, ...CreateStyles.icon }}
-        />
-      </TouchableHighlight> */}
-      {/* <TouchableHighlight onPress={() => setStartCamera(false)}>
-        <Text style={{ color: theme.TEXT_COLOR }}>close camera</Text>
-      </TouchableHighlight> */}
-      <Text style={{ color: theme.TEXT_COLOR }}>
-        {JSON.stringify(results, null, 2, 0)}
-      </Text>
     </SafeAreaView>
   );
 }
