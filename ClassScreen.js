@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import * as SQLite from "expo-sqlite";
 import theme from "./theme";
 import { useEffect, useReducer, useState } from "react";
@@ -15,10 +15,10 @@ function ClassScreen({ navigation, route }) {
   const [cardData, setCardData] = useState([]);
   const [originalCardData, setOriginalCardData] = useState([]);
   const [ready, setReady] = useState(false);
+  const [isEmptyClass, setIsEmptyClass] = useState(false);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const isFocused = useIsFocused();
-
   // fetch cards from database
   useEffect(() => {
     db.transaction((tx) => {
@@ -26,14 +26,15 @@ function ClassScreen({ navigation, route }) {
         "SELECT * FROM cards WHERE class_id = ?",
         [route.params.id],
         (txObj, resultSet) => {
-          if (resultSet.rows.length === 0) {
-            console.log("empty class!");
-            navigation.navigate("Edit", { id: route.params.id });
+          if (resultSet.rows._array.length === 0) {
+            setIsEmptyClass(true);
+            setReady(true);
+          } else {
+            let cardData = resultSet.rows._array;
+            setOriginalCardData([...cardData]);
+            setCardData(cardData);
+            setReady(true);
           }
-          let cardData = resultSet.rows._array;
-          setOriginalCardData([...cardData]);
-          setCardData(cardData);
-          setReady(true);
         },
         (txObj, error) => console.log(error)
       );
@@ -65,6 +66,16 @@ function ClassScreen({ navigation, route }) {
 
   if (!ready) {
     return null;
+  }
+
+  if (isEmptyClass) {
+    return (
+      <Button
+        style={{ backgroundColor: theme.PRIMARY_COLOR, padding: 50 }}
+        title="Add cards"
+        onPress={() => navigation.navigate("Edit", { id: route.params.id })}
+      />
+    );
   }
 
   return (
