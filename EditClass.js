@@ -12,7 +12,7 @@ import * as SQLite from "expo-sqlite";
 import { useFormik, FormikProvider, FieldArray, FastField } from "formik";
 import { Button } from "@rneui/themed";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-// import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused } from "@react-navigation/native";
 import InputWithImage from "./utils/InputWithImage";
 
 export default function EditClass({ route, navigation }) {
@@ -68,39 +68,48 @@ export default function EditClass({ route, navigation }) {
   };
 
   const handleSubmitDb = (insertArray, updateArray) => {
-    db.transaction((tx) => {
-      insertArray.forEach((card) => {
-        tx.executeSql(
-          "INSERT INTO cards (question_text, question_image, answer_text, answer_image, class_id) values (?, ?, ?, ?, ?)",
-          [
-            card.question_text ? card.question_text : null,
-            card.question_image ? card.question_image : null,
-            card.answer_text ? card.answer_text : null,
-            card.answer_image ? card.answer_image : null,
-            route.params.id,
-          ]
-          // (txObj, resultSet) => console.log("insert resultset: ", resultSet),
-          // (txObj, error) => console.log("insert error", error)
-        );
-      });
-      updateArray.forEach((card) => {
-        tx.executeSql(
-          "UPDATE cards SET question_text = ?, question_image = ?, answer_text = ?, answer_image = ? WHERE id = ?",
-          [
-            card.question_text ? card.question_text : null,
-            card.question_image ? card.question_image : null,
-            card.answer_text ? card.answer_text : null,
-            card.answer_image ? card.answer_image : null,
-            card.id,
-          ],
-          (txObj, resultSet) => {
-            setSubmitting(false);
-            navigation.navigate("Class", { id: route.params.id });
-          }
-          // (txObj, error) => console.log("update error", error)
-        );
-      });
-    });
+    db.transaction(
+      (tx) => {
+        insertArray.forEach((card) => {
+          tx.executeSql(
+            "INSERT INTO cards (question_text, question_image, answer_text, answer_image, class_id) values (?, ?, ?, ?, ?)",
+            [
+              card.question_text ? card.question_text : null,
+              card.question_image ? card.question_image : null,
+              card.answer_text ? card.answer_text : null,
+              card.answer_image ? card.answer_image : null,
+              route.params.id,
+            ]
+            // (txObj, resultSet) => console.log("insert resultset: ", resultSet),
+            // (txObj, error) => console.log("insert error", error)
+          );
+        });
+        updateArray.forEach((card) => {
+          tx.executeSql(
+            "UPDATE cards SET question_text = ?, question_image = ?, answer_text = ?, answer_image = ? WHERE id = ?",
+            [
+              card.question_text ? card.question_text : null,
+              card.question_image ? card.question_image : null,
+              card.answer_text ? card.answer_text : null,
+              card.answer_image ? card.answer_image : null,
+              card.id,
+            ],
+            (txObj, resultSet) => {
+              return;
+            },
+            (txObj, error) => console.log("update error", error)
+          );
+        });
+      },
+      (err) => {
+        console.log("error: ", err);
+      },
+      () => {
+        setSubmitting(false);
+        // console.log(resultSet);
+        navigation.navigate("Class", { id: route.params.id });
+      }
+    );
   };
 
   const formik = useFormik({
