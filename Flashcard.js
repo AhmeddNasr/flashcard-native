@@ -6,7 +6,7 @@ import {
   View,
   Animated,
 } from "react-native";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import theme from "./theme";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -15,17 +15,67 @@ export default function Flashcard(props) {
   const questionImage = props.data.question_image;
   const answer = props.data.answer_text;
   const answerImage = props.data.answer_image;
-
+  //STOP HERE
   // TODO
-  // const flipAnimatedValue = useRef(new Animated.Value(0)).current;
+  const flipAnimation = useRef(new Animated.Value(0)).current;
+  let flipRotation = 0;
+  flipAnimation.addListener(({ value }) => (flipRotation = value));
+
+  useEffect(() => {
+    if (props.frontVisible) {
+      flipToFront();
+    } else {
+      flipToBack();
+    }
+  }, [props.frontVisible]);
+
+  const flipToFront = () => {
+    Animated.timing(flipAnimation, {
+      toValue: 180,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const flipToBack = () => {
+    Animated.timing(flipAnimation, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const flipToFrontStyle = {
+    transform: [
+      {
+        rotateY: flipAnimation.interpolate({
+          inputRange: [0, 180],
+          outputRange: ["0deg", "180deg"],
+        }),
+      },
+    ],
+  };
+
+  const flipToBackStyle = {
+    transform: [
+      {
+        rotateY: flipAnimation.interpolate({
+          inputRange: [0, 180],
+          outputRange: ["180deg", "360deg"],
+        }),
+      },
+    ],
+  };
 
   return (
-    <View style={styles.card}>
-      <KeyboardAwareScrollView>
-        <View style={styles.innerCard}>
-          {/* Front side */}
-          <View>
-            {props.frontVisible && (
+    <View style={styles.cardWrapper}>
+      <Animated.View
+        style={{ ...styles.card, ...styles.cardFront, ...flipToBackStyle }}
+      >
+        <KeyboardAwareScrollView>
+          <View style={styles.innerCard}>
+            {/* Front side */}
+            <View>
               <View>
                 {questionImage && (
                   <Image
@@ -37,9 +87,17 @@ export default function Flashcard(props) {
                 )}
                 <Text style={styles.text}>{question ? question : ""}</Text>
               </View>
-            )}
-            {/* Back side */}
-            {!props.frontVisible && (
+            </View>
+          </View>
+        </KeyboardAwareScrollView>
+      </Animated.View>
+      <Animated.View
+        style={{ ...styles.card, ...styles.cardBack, ...flipToFrontStyle }}
+      >
+        <KeyboardAwareScrollView>
+          <View style={styles.innerCard}>
+            <View>
+              {/* Back side */}
               <View>
                 {answerImage && (
                   <Image
@@ -51,15 +109,21 @@ export default function Flashcard(props) {
                 )}
                 <Text style={styles.text}>{answer ? answer : ""}</Text>
               </View>
-            )}
+            </View>
           </View>
-        </View>
-      </KeyboardAwareScrollView>
+        </KeyboardAwareScrollView>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  cardWrapper: {
+    maxHeight: 400,
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
   card: {
     padding: 20,
     backgroundColor: theme.PRIMARY_COLOR,
@@ -67,7 +131,13 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    width: "100%",
+  },
+  cardFront: {
+    position: "absolute",
+  },
+  cardBack: {
+    backfaceVisibility: "hidden",
   },
   innerCard: {
     flex: 1,
