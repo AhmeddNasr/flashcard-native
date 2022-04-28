@@ -1,27 +1,37 @@
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import * as SQLite from "expo-sqlite";
 import theme from "./theme";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import Flashcard from "./Flashcard";
 import { MaterialIcons } from "@expo/vector-icons";
 import FlashcardControl from "./utils/FlashcardControl";
 import { useIsFocused } from "@react-navigation/native";
-
+import { Dimensions } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 const db = SQLite.openDatabase("db.db");
 
 function ClassScreen({ navigation, route }) {
-  const [frontVisible, setFrontVisible] = useState(false);
+  const [frontVisible, setFrontVisible] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardData, setCardData] = useState([]);
   const [originalCardData, setOriginalCardData] = useState([]);
   const [ready, setReady] = useState(false);
   const [isEmptyClass, setIsEmptyClass] = useState(false);
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
-
   const isFocused = useIsFocused();
+
   // fetch cards from database
   useEffect(() => {
+    // prevent fetching when out of focus
+    if (!isFocused) {
+      return;
+    }
     db.transaction((tx) => {
+      // setCurrentIndex(0);
       tx.executeSql(
         "SELECT * FROM cards WHERE class_id = ?",
         [route.params.id],
@@ -31,6 +41,7 @@ function ClassScreen({ navigation, route }) {
             setReady(true);
           } else {
             let cardData = resultSet.rows._array;
+            setCurrentIndex(0);
             setOriginalCardData([...cardData]);
             setCardData(cardData);
             setReady(true);
@@ -41,21 +52,40 @@ function ClassScreen({ navigation, route }) {
     });
   }, [isFocused]);
 
-  //TODO repeatcards?
+  // fade in and out animation
+  const fadeAnimation = useSharedValue(0);
+  const fadeInOut = () => {
+    "worklet";
+    fadeAnimation.value = withSequence(
+      withTiming(1, { duration: 250 }),
+      withTiming(0, { duration: 2000 })
+    );
+  };
+  const fadeInOutStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeAnimation.value,
+    };
+  });
+
+  //Go to next card or the beginning if its the last card
   const incrementFlashcardIndex = (correct) => {
     setFrontVisible(true);
+    // push current card to the end of array if user didn't answer correctly
     if (!correct) {
       let tempArr = cardData;
       tempArr.push(cardData[currentIndex]);
       setCardData(tempArr);
+      fadeInOut();
     }
+    // Go to the begninning and clear cards added when user answer incorrectly
     if (currentIndex === cardData.length - 1) {
-      setCardData([...originalCardData]);
-      return setCurrentIndex(0);
+      setCurrentIndex(0);
+      return setCardData([...originalCardData]);
     }
     setCurrentIndex(currentIndex + 1);
   };
 
+  // Go to the previous card
   const decrementFlashcardIndex = () => {
     if (currentIndex == 0) {
       return;
@@ -87,9 +117,32 @@ function ClassScreen({ navigation, route }) {
           frontVisible={frontVisible}
           setFrontVisible={setFrontVisible}
         />
-        <Text style={{ textAlign: "center", padding: 10, ...styles.text }}>
-          {currentIndex + 1} / {cardData.length}
-        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+          }}
+        >
+          <Text style={{ textAlign: "center", padding: 10, ...styles.text }}>
+            {currentIndex + 1} / {cardData.length}
+          </Text>
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                left: Dimensions.get("window").width / 2 + 14,
+                backgroundColor: theme.PRIMARY_COLOR,
+                padding: 5,
+                borderRadius: 5,
+              },
+              fadeInOutStyle,
+            ]}
+          >
+            <Text style={styles.text}>+1</Text>
+          </Animated.View>
+        </View>
       </View>
       <View style={styles.controlContainer}>
         <FlashcardControl title="Back" action={() => decrementFlashcardIndex()}>
