@@ -12,8 +12,8 @@ import * as SQLite from "expo-sqlite";
 import { useFormik, FormikProvider, FieldArray, FastField } from "formik";
 import { Button } from "@rneui/themed";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useIsFocused } from "@react-navigation/native";
 import InputWithImage from "./utils/InputWithImage";
+import * as Yup from "yup";
 
 export default function EditClass({ route, navigation }) {
   const [cardsData, setCardsData] = useState([{ id: -1 }]);
@@ -80,8 +80,6 @@ export default function EditClass({ route, navigation }) {
               card.answer_image ? card.answer_image : null,
               route.params.id,
             ]
-            // (txObj, resultSet) => console.log("insert resultset: ", resultSet),
-            // (txObj, error) => console.log("insert error", error)
           );
         });
         updateArray.forEach((card) => {
@@ -106,20 +104,29 @@ export default function EditClass({ route, navigation }) {
       },
       () => {
         setSubmitting(false);
-        // console.log(resultSet);
         navigation.navigate("Class", { id: route.params.id });
       }
     );
   };
 
+  const validationSchema = Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .trim()
+      .min(3, "Too short! (Min 3 Characters)")
+      .max(30, "Too Long! (Max 30 Characters)"),
+    description: Yup.string().max(200, "Too Long! (Max 200 Characters)"),
+  });
+
   const formik = useFormik({
-    validateOnChange: false,
-    validateOnBlur: false,
+    validateOnChange: true,
+    validateOnBlur: true,
     initialValues: {
       name: classData.name,
       description: classData.description,
       cards: cardsData,
     },
+    validationSchema: validationSchema,
     enableReinitialize: true,
     onSubmit: (values) => {
       setSubmitting(true);
@@ -146,14 +153,28 @@ export default function EditClass({ route, navigation }) {
           <View style={styles.header}>
             <Text style={styles.header_text}>Class Info</Text>
           </View>
+          {/* TODO DRY */}
           <TextInput
-            style={styles.input}
+            style={
+              formik.errors.name
+                ? { ...styles.input, borderColor: theme.SECONDARY_COLOR }
+                : styles.input
+            }
             onChangeText={formik.handleChange("name")}
             onBlur={formik.handleBlur("name")}
             value={formik.values.name}
             placeholder="Class Name"
             placeholderTextColor={theme.TEXT_COLOR_OPACITY}
           />
+          <Text
+            style={
+              formik.errors.name
+                ? { ...styles.input_hint, color: theme.SECONDARY_COLOR }
+                : styles.input_hint
+            }
+          >
+            {formik.errors.name ?? "Class Name"}
+          </Text>
           <TextInput
             style={styles.input}
             onChangeText={formik.handleChange("description")}
@@ -163,7 +184,15 @@ export default function EditClass({ route, navigation }) {
             placeholderTextColor={theme.TEXT_COLOR_OPACITY}
             multiline
           />
-
+          <Text
+            style={
+              formik.errors.description
+                ? { ...styles.input_hint, color: theme.SECONDARY_COLOR }
+                : styles.input_hint
+            }
+          >
+            {formik.errors.description ?? "Class Description"}
+          </Text>
           {/* Cards section */}
           <View style={styles.header}>
             <Text style={styles.header_text}>Cards (41)</Text>
@@ -233,33 +262,6 @@ export default function EditClass({ route, navigation }) {
             >
               <Text style={styles.button_text}>Add Card</Text>
             </TouchableOpacity>
-
-            {/* <Button
-              onPress={() => {
-                fieldArrayRef.current.push({ id: latestId.current });
-                latestId.current = latestId.current - 1;
-              }}
-              title="Add Card"
-              buttonStyle={{
-                backgroundColor: theme.PRIMARY_COLOR,
-                borderRadius: 10,
-                marginRight: 5,
-                flex: 1,
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-              }}
-            />
-            <Button
-              onPress={submitting ? null : formik.handleSubmit}
-              title="Submit"
-              loading={submitting}
-              buttonStyle={{
-                backgroundColor: theme.PRIMARY_COLOR,
-                borderRadius: 10,
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-              }}
-            /> */}
           </View>
 
           {/* debugging */}
@@ -294,9 +296,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 10,
     marginTop: 8,
-    marginBottom: 8,
     width: "100%",
     backgroundColor: theme.BACKGROUND_COLOR,
+  },
+  input_hint: {
+    color: theme.TEXT_COLOR_OPACITY,
+    padding: 5,
+    marginBottom: 8,
   },
   header: {
     backgroundColor: theme.PRIMARY_COLOR,

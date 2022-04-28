@@ -5,6 +5,7 @@ export default {
   // rgba(111, 202, 186, 1)
   BACKGROUND_COLOR: "#18191A",
   PRIMARY_COLOR: "rgba(92, 99,216, 1)",
+  SECONDARY_COLOR: "#d85c60",
   // ACCENT_COLOR: "#282A36",
   ACCENT_COLOR: "rgba(111, 202, 186, 1)",
   FONT_SIZE_SMALL: 12,
