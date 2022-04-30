@@ -112,14 +112,29 @@ export default function EditClass({ route, navigation }) {
   const validationSchema = Yup.object().shape({
     name: Yup.string()
       .trim()
-      .trim()
-      .min(3, "Too short! (Min 3 Characters)")
-      .max(30, "Too Long! (Max 30 Characters)"),
+      .min(3, "Too Short! (Min 3 Characters)")
+      .max(30, "Too Long! (Max 30 Characters)")
+      .required("Name Can Not Be Empty"),
     description: Yup.string().max(200, "Too Long! (Max 200 Characters)"),
+    cards: Yup.array().of(
+      Yup.object()
+        .shape({
+          question_text: Yup.string().when("question_image", {
+            is: (question_image) => !question_image,
+            then: Yup.string().required("Question Must Contain Text or Image"),
+          }),
+        })
+        .shape({
+          answer_text: Yup.string().when("answer_image", {
+            is: (answer_image) => !answer_image,
+            then: Yup.string().required("Answer Must Contain Text or Image"),
+          }),
+        })
+    ),
   });
 
   const formik = useFormik({
-    validateOnChange: true,
+    validateOnChange: false,
     validateOnBlur: true,
     initialValues: {
       name: classData.name,
@@ -154,7 +169,8 @@ export default function EditClass({ route, navigation }) {
             <Text style={styles.header_text}>Class Info</Text>
           </View>
           {/* TODO DRY */}
-          <TextInput
+          <FastField
+            component={TextInput}
             style={
               formik.errors.name
                 ? { ...styles.input, borderColor: theme.SECONDARY_COLOR }
@@ -175,7 +191,8 @@ export default function EditClass({ route, navigation }) {
           >
             {formik.errors.name ?? "Class Name"}
           </Text>
-          <TextInput
+          <FastField
+            component={TextInput}
             style={styles.input}
             onChangeText={formik.handleChange("description")}
             onBlur={formik.handleBlur("description")}
@@ -195,7 +212,9 @@ export default function EditClass({ route, navigation }) {
           </Text>
           {/* Cards section */}
           <View style={styles.header}>
-            <Text style={styles.header_text}>Cards (41)</Text>
+            <Text style={styles.header_text}>
+              Cards ({formik.values.cards.length})
+            </Text>
           </View>
 
           <FieldArray
@@ -266,7 +285,7 @@ export default function EditClass({ route, navigation }) {
 
           {/* debugging */}
           <Text style={{ color: theme.TEXT_COLOR }}>
-            {JSON.stringify(formik.values, null, 2, 0)}
+            {JSON.stringify(formik.errors, null, 2, 0)}
           </Text>
         </FormikProvider>
         <Text style={styles.text}>Class id: {route.params.id}</Text>
