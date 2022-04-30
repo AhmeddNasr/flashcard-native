@@ -12,7 +12,6 @@ import { FastField } from "formik";
 import { MaterialIcons } from "@expo/vector-icons";
 import theme from "../theme";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
 
 export default function InputWithImage(props) {
   const formik = props.formik;
@@ -21,18 +20,20 @@ export default function InputWithImage(props) {
   const index = props.index;
   const type = props.type;
   const cardValue = formik.values.cards[index];
+  const cardError = formik.errors.cards ? formik.errors.cards[index] : null;
   const value =
     type === "question" ? cardValue.question_text : cardValue.answer_text;
   const imageValue =
     type === "question" ? cardValue.question_image : cardValue.answer_image;
+  const error = !cardError
+    ? null
+    : type === "question"
+    ? cardError.question_text
+    : cardError.answer_text;
 
-  const [active, setActive] = useState(false);
-  const [modalActive, setModalActive] = useState(false);
-
-  const handleBlur = () => {
-    setActive(false);
-    formik.handleBlur(`${card}.${type}_text`);
-  };
+  //   setActive(false);
+  //   formik.handleBlur(`${card}.${type}_text`);
+  // };
 
   const uploadImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -41,26 +42,32 @@ export default function InputWithImage(props) {
       aspect: [4, 3],
       quality: 0.1,
     });
-    console.log(result);
+    // console.log(result);
     if (!result.cancelled) {
       formik.setFieldValue(`${card}.${type}_image`, result.uri, false);
     }
   };
 
+  //TODO
   const captureImage = async () => {};
 
   // const handleImageIconPress = () => {
   //   setModalActive(true);
   // };
 
+  const borderColor = error
+    ? theme.SECONDARY_COLOR
+    : index % 2 !== 0
+    ? theme.TEXT_COLOR_OPACITY
+    : theme.PRIMARY_COLOR;
+
   return (
     <View>
-      <View style={{ opacity: active ? 1 : 0.8 }}>
+      <View style={{ opacity: 1 }}>
         <View
           style={{
             ...styles.input_block,
-            borderColor:
-              index % 2 !== 0 ? theme.TEXT_COLOR_OPACITY : theme.PRIMARY_COLOR,
+            borderColor: borderColor,
           }}
         >
           {imageValue && (
@@ -72,11 +79,16 @@ export default function InputWithImage(props) {
             />
           )}
 
-          <View style={styles.text_input_block}>
+          <View
+            style={{
+              ...styles.text_input_block,
+              borderColor: error ? theme.SECONDARY_COLOR : borderColor,
+            }}
+          >
             <FastField
               component={TextInput}
               onChangeText={formik.handleChange(`${card}.${type}_text`)}
-              onBlur={handleBlur}
+              onBlur={formik.handleBlur(`${card}.${type}_text`)}
               value={value}
               style={{
                 ...styles.input,
@@ -86,7 +98,6 @@ export default function InputWithImage(props) {
               multiline
               placeholder={type === "question" ? "Question" : "Answer"}
               placeholderTextColor={theme.TEXT_COLOR_OPACITY}
-              onFocus={() => setActive(true)}
             />
             <TouchableOpacity>
               <MaterialIcons
@@ -100,8 +111,13 @@ export default function InputWithImage(props) {
           </View>
         </View>
       </View>
-      <Text style={{ color: theme.TEXT_COLOR_OPACITY, padding: 5 }}>
-        {type}
+      <Text
+        style={{
+          color: error ? theme.SECONDARY_COLOR : theme.TEXT_COLOR_OPACITY,
+          padding: 5,
+        }}
+      >
+        {error ? error : type}
       </Text>
     </View>
   );
@@ -118,7 +134,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 15,
-    marginTop: 15,
+    marginTop: 10,
   },
   input: {
     color: theme.TEXT_COLOR,
@@ -138,6 +154,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 0,
     margin: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   icon: {
     color: theme.TEXT_COLOR_OPACITY,
