@@ -115,20 +115,28 @@ export default function EditClass({ route, navigation }) {
       .min(3, "Too Short! (Min 3 Characters)")
       .max(30, "Too Long! (Max 30 Characters)")
       .required("Name Can Not Be Empty"),
-    description: Yup.string().max(200, "Too Long! (Max 200 Characters)"),
+    description: Yup.string()
+      .nullable(true)
+      .max(200, "Too Long! (Max 200 Characters)"),
     cards: Yup.array().of(
       Yup.object()
         .shape({
-          question_text: Yup.string().when("question_image", {
-            is: (question_image) => !question_image,
-            then: Yup.string().required("Question Must Contain Text or Image"),
-          }),
+          question_text: Yup.string()
+            .nullable(true)
+            .when("question_image", {
+              is: (question_image) => !question_image,
+              then: Yup.string().required(
+                "Question Must Contain Text or Image"
+              ),
+            }),
         })
         .shape({
-          answer_text: Yup.string().when("answer_image", {
-            is: (answer_image) => !answer_image,
-            then: Yup.string().required("Answer Must Contain Text or Image"),
-          }),
+          answer_text: Yup.string()
+            .nullable(true)
+            .when("answer_image", {
+              is: (answer_image) => !answer_image,
+              then: Yup.string().required("Answer Must Contain Text or Image"),
+            }),
         })
     ),
   });
@@ -155,11 +163,12 @@ export default function EditClass({ route, navigation }) {
 
   return (
     <KeyboardAwareScrollView
-      extraHeight={25}
-      extraScrollHeight={25}
+      extraHeight={40}
+      extraScrollHeight={40}
       scrollEnabled
       enableAutomaticScroll
       enableOnAndroid
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.container}>
         {/* form */}
