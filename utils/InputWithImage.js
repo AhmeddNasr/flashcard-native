@@ -12,6 +12,7 @@ import { FastField } from "formik";
 import { MaterialIcons } from "@expo/vector-icons";
 import theme from "../theme";
 import * as ImagePicker from "expo-image-picker";
+import { useMemo } from "react";
 
 export default function InputWithImage(props) {
   const formik = props.formik;
@@ -61,66 +62,69 @@ export default function InputWithImage(props) {
     ? theme.TEXT_COLOR_OPACITY
     : theme.PRIMARY_COLOR;
 
-  return (
-    <View>
-      <View style={{ opacity: 1 }}>
-        <View
-          style={{
-            ...styles.input_block,
-            borderColor: borderColor,
-          }}
-        >
-          {imageValue && (
-            <Image
-              style={styles.card_image}
-              source={{
-                uri: imageValue,
-              }}
-            />
-          )}
-
+  return useMemo(() => {
+    console.log("I rerendered");
+    return (
+      <View>
+        <View style={{ opacity: 1 }}>
           <View
             style={{
-              ...styles.text_input_block,
-              borderColor: error ? theme.SECONDARY_COLOR : borderColor,
+              ...styles.input_block,
+              borderColor: borderColor,
             }}
           >
-            <FastField
-              component={TextInput}
-              onChangeText={formik.handleChange(`${card}.${type}_text`)}
-              onBlur={formik.handleBlur(`${card}.${type}_text`)}
-              value={value}
-              style={{
-                ...styles.input,
-                ...styles.input_noborder,
-                flex: 1,
-              }}
-              multiline
-              placeholder={type === "question" ? "Question" : "Answer"}
-              placeholderTextColor={theme.TEXT_COLOR_OPACITY}
-            />
-            <TouchableOpacity>
-              <MaterialIcons
-                name="image"
-                style={{
-                  ...styles.icon,
+            {imageValue && (
+              <Image
+                style={styles.card_image}
+                source={{
+                  uri: imageValue,
                 }}
-                onPress={uploadImage}
               />
-            </TouchableOpacity>
+            )}
+
+            <View
+              style={{
+                ...styles.text_input_block,
+                borderColor: error ? theme.SECONDARY_COLOR : borderColor,
+              }}
+            >
+              <FastField
+                component={TextInput}
+                onChangeText={formik.handleChange(`${card}.${type}_text`)}
+                onBlur={formik.handleBlur(`${card}.${type}_text`)}
+                value={value}
+                style={{
+                  ...styles.input,
+                  ...styles.input_noborder,
+                  flex: 1,
+                }}
+                multiline
+                placeholder={type === "question" ? "Question" : "Answer"}
+                placeholderTextColor={theme.TEXT_COLOR_OPACITY}
+              />
+              <TouchableOpacity>
+                <MaterialIcons
+                  name="image"
+                  style={{
+                    ...styles.icon,
+                  }}
+                  onPress={uploadImage}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
+        <Text
+          style={{
+            color: error ? theme.SECONDARY_COLOR : theme.TEXT_COLOR_OPACITY,
+            padding: 5,
+          }}
+        >
+          {error ? error : type}
+        </Text>
       </View>
-      <Text
-        style={{
-          color: error ? theme.SECONDARY_COLOR : theme.TEXT_COLOR_OPACITY,
-          padding: 5,
-        }}
-      >
-        {error ? error : type}
-      </Text>
-    </View>
-  );
+    );
+  }, [item, error]);
 }
 
 const styles = StyleSheet.create({
