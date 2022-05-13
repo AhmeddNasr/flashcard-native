@@ -11,6 +11,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSequence,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
 const db = SQLite.openDatabase("db.db");
@@ -23,7 +24,7 @@ function ClassScreen({ navigation, route }) {
   const [ready, setReady] = useState(false);
   const [isEmptyClass, setIsEmptyClass] = useState(false);
   const isFocused = useIsFocused();
-
+  const screenWidth = Dimensions.get("screen").width;
   // fetch cards from database
   useEffect(() => {
     // prevent fetching when out of focus
@@ -52,8 +53,9 @@ function ClassScreen({ navigation, route }) {
     });
   }, [isFocused]);
 
-  // fade in and out animation
+  // fade in and out animation for +1 number
   const fadeAnimation = useSharedValue(0);
+  const slideAnimation = useSharedValue(0);
   const fadeInOut = () => {
     "worklet";
     fadeAnimation.value = withSequence(
@@ -66,6 +68,14 @@ function ClassScreen({ navigation, route }) {
       opacity: fadeAnimation.value,
     };
   });
+
+  // card slide animation
+  useEffect(() => {
+    slideAnimation.value = withSpring(currentIndex, {
+      stiffness: 150,
+      damping: 18,
+    });
+  }, [currentIndex]);
 
   //Go to next card or the beginning if its the last card
   const incrementFlashcardIndex = (correct) => {
@@ -84,6 +94,16 @@ function ClassScreen({ navigation, route }) {
     }
     setCurrentIndex(currentIndex + 1);
   };
+
+  const slideAnimationStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: (-screenWidth + 20) * slideAnimation.value,
+        },
+      ],
+    };
+  });
 
   // Go to the previous card
   const decrementFlashcardIndex = () => {
@@ -111,12 +131,25 @@ function ClassScreen({ navigation, route }) {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
-        <Flashcard
-          data={cardData[currentIndex]}
-          setCurrentIndex={setCurrentIndex}
-          frontVisible={frontVisible}
-          setFrontVisible={setFrontVisible}
-        />
+        <Animated.View
+          style={[
+            {
+              flexDirection: "row",
+            },
+            slideAnimationStyle,
+          ]}
+        >
+          {cardData.map((card, index) => (
+            <View style={{ marginRight: 20 }} key={index}>
+              <Flashcard
+                data={card}
+                setCurrentIndex={setCurrentIndex}
+                frontVisible={frontVisible}
+                setFrontVisible={setFrontVisible}
+              />
+            </View>
+          ))}
+        </Animated.View>
         <View
           style={{
             flexDirection: "row",
