@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   Text,
   View,
@@ -11,9 +11,11 @@ import theme from "./theme";
 import * as SQLite from "expo-sqlite";
 import { useFormik, FormikProvider, FieldArray, FastField } from "formik";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { MaterialIcons } from "react-native-vector-icons";
 import InputWithImage from "./utils/InputWithImage";
 import * as Yup from "yup";
 import FloatingActionButton from "./utils/FloatingActionButton";
+import debounce from "./utils/debounce";
 
 export default function EditClass({ route, navigation }) {
   const [cardsData, setCardsData] = useState([{ id: -1 }]);
@@ -21,6 +23,7 @@ export default function EditClass({ route, navigation }) {
   const [submitting, setSubmitting] = useState(false);
   const [listReady, setListReady] = useState(false);
   const [deleting, setDeleting] = useState(true);
+  const [query, setQuery] = useState("");
   const db = SQLite.openDatabase("db.db");
 
   const latestId = useRef(-2);
@@ -142,6 +145,8 @@ export default function EditClass({ route, navigation }) {
     ),
   });
 
+  const debounceQuery = useCallback(debounce(setQuery, 300), []);
+
   const formik = useFormik({
     validateOnChange: true,
     validateOnBlur: true,
@@ -228,39 +233,76 @@ export default function EditClass({ route, navigation }) {
               </Text>
             </View>
 
+            {/* QUERY */}
+            <View
+              style={{
+                flexDirection: "row",
+                backgroundColor: theme.BACKGROUND_COLOR_ELEVATED,
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 10,
+                marginBottom: 30,
+              }}
+            >
+              <TextInput
+                placeholder="Search"
+                placeholderTextColor={theme.TEXT_COLOR_OPACITY}
+                style={{
+                  padding: 10,
+                  paddingLeft: 0,
+                  flex: 1,
+                  color: theme.TEXT_COLOR,
+                }}
+                onChangeText={(val) => debounceQuery(val)}
+              />
+              <MaterialIcons
+                name="search"
+                style={{
+                  color: theme.TEXT_COLOR_OPACITY,
+                  fontSize: theme.FONT_SIZE_ICON,
+                }}
+              />
+            </View>
+
             {/* CARDS */}
             <FieldArray
               name="cards"
               render={(arrayHelpers) => {
                 fieldArrayRef.current = arrayHelpers;
-                return formik.values.cards.map((item, index) => {
-                  let card = `cards.${index}`;
-                  return (
-                    <View
-                      style={{
-                        ...styles.card_block,
-                        borderColor:
-                          index % 2 ? theme.TEXT_COLOR : theme.PRIMARY_COLOR,
-                      }}
-                      key={item.id}
-                    >
-                      <InputWithImage
-                        type="question"
-                        index={index}
-                        formik={formik}
-                        item={item}
-                        card={card}
-                      />
-                      <InputWithImage
-                        type="answer"
-                        index={index}
-                        formik={formik}
-                        item={item}
-                        card={card}
-                      />
-                    </View>
-                  );
-                });
+                return formik.values.cards
+                  .filter(
+                    (card) =>
+                      card.question_text.includes(query) ||
+                      card.answer_text.includes(query)
+                  )
+                  .map((item, index) => {
+                    let card = `cards.${index}`;
+                    return (
+                      <View
+                        style={{
+                          ...styles.card_block,
+                          borderColor:
+                            index % 2 ? theme.TEXT_COLOR : theme.PRIMARY_COLOR,
+                        }}
+                        key={item.id}
+                      >
+                        <InputWithImage
+                          type="question"
+                          index={index}
+                          formik={formik}
+                          item={item}
+                          card={card}
+                        />
+                        <InputWithImage
+                          type="answer"
+                          index={index}
+                          formik={formik}
+                          item={item}
+                          card={card}
+                        />
+                      </View>
+                    );
+                  });
               }}
             />
 
@@ -270,6 +312,8 @@ export default function EditClass({ route, navigation }) {
                 disabled={submitting}
                 style={{
                   ...styles.button,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
                   flex: 1,
                   marginRight: 10,
                 }}
