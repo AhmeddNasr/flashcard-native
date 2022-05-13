@@ -227,7 +227,7 @@ export default function EditClass({ route, navigation }) {
               {formik.errors.description ?? "Class Description"}
             </Text>
             {/* Cards section */}
-            <View style={styles.header}>
+            <View style={{ ...styles.header, marginBottom: 0 }}>
               <Text style={styles.header_text}>
                 Cards ({formik.values.cards.length})
               </Text>
@@ -237,11 +237,13 @@ export default function EditClass({ route, navigation }) {
             <View
               style={{
                 flexDirection: "row",
-                backgroundColor: theme.BACKGROUND_COLOR_ELEVATED,
+                backgroundColor: theme.PRIMARY_COLOR,
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: 10,
                 marginBottom: 30,
+                borderTop: theme.TEXT_COLOR_VERY_OPACITY,
+                borderTopWidth: 1,
               }}
             >
               <TextInput
