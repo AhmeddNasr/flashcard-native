@@ -5,7 +5,6 @@ import {
   Image,
   Text,
   Modal,
-  Pressable,
   TouchableOpacity,
 } from "react-native";
 import { FastField } from "formik";
@@ -40,7 +39,6 @@ export default function InputWithImage(props) {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 0.1,
     });
     // console.log(result);
@@ -63,65 +61,62 @@ export default function InputWithImage(props) {
     : theme.PRIMARY_COLOR;
 
   return useMemo(() => {
-    console.log("I rerendered");
     return (
-      <View>
-        <View style={{ opacity: 1 }}>
-          <View
-            style={{
-              ...styles.input_block,
-              borderColor: borderColor,
-            }}
-          >
-            {imageValue && (
-              <Image
-                style={styles.card_image}
-                source={{
-                  uri: imageValue,
-                }}
-              />
-            )}
-
-            <View
-              style={{
-                ...styles.text_input_block,
-                borderColor: error ? theme.SECONDARY_COLOR : borderColor,
-              }}
-            >
-              <FastField
-                component={TextInput}
-                onChangeText={formik.handleChange(`${card}.${type}_text`)}
-                onBlur={formik.handleBlur(`${card}.${type}_text`)}
-                value={value}
-                style={{
-                  ...styles.input,
-                  ...styles.input_noborder,
-                  flex: 1,
-                }}
-                multiline
-                placeholder={type === "question" ? "Question" : "Answer"}
-                placeholderTextColor={theme.TEXT_COLOR_OPACITY}
-              />
-              <TouchableOpacity>
-                <MaterialIcons
-                  name="image"
-                  style={{
-                    ...styles.icon,
-                  }}
-                  onPress={uploadImage}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        <Text
+      <View style={{ opacity: 1 }}>
+        <View
           style={{
-            color: error ? theme.SECONDARY_COLOR : theme.TEXT_COLOR_OPACITY,
-            padding: 5,
+            ...styles.input_block,
+            borderColor: borderColor,
           }}
         >
-          {error ? error : type}
-        </Text>
+          {imageValue && (
+            <Image
+              style={styles.card_image}
+              source={{
+                uri: imageValue,
+              }}
+            />
+          )}
+
+          <View
+            style={{
+              ...styles.text_input_block,
+              borderColor: error ? theme.SECONDARY_COLOR : borderColor,
+            }}
+          >
+            <FastField
+              component={TextInput}
+              onChangeText={formik.handleChange(`${card}.${type}_text`)}
+              onBlur={formik.handleBlur(`${card}.${type}_text`)}
+              value={value}
+              style={{
+                ...styles.input,
+                flex: 1,
+              }}
+              multiline
+              placeholder={type === "question" ? "Question" : "Answer"}
+              placeholderTextColor={theme.TEXT_COLOR_OPACITY}
+            />
+            <TouchableOpacity>
+              <MaterialIcons
+                name="image"
+                style={{
+                  ...styles.icon,
+                }}
+                onPress={uploadImage}
+              />
+            </TouchableOpacity>
+          </View>
+          <Text
+            style={{
+              color: error ? theme.SECONDARY_COLOR : theme.TEXT_COLOR_OPACITY,
+              padding: 5,
+              alignSelf: "flex-start",
+            }}
+          >
+            {error ? error : type}
+          </Text>
+        </View>
       </View>
     );
   }, [item, error]);
@@ -129,30 +124,23 @@ export default function InputWithImage(props) {
 
 const styles = StyleSheet.create({
   card_image: {
-    width: 250,
+    width: "100%",
     height: 200,
+    marginBottom: 0,
   },
   input_block: {
-    borderWidth: 2,
-    borderColor: theme.PRIMARY_COLOR,
+    padding: 10,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 15,
-    marginTop: 10,
+    // marginTop: 10,
   },
   input: {
     color: theme.TEXT_COLOR,
-    paddingLeft: 10,
-    borderColor: theme.PRIMARY_COLOR,
-    borderWidth: 2,
     borderRadius: 10,
-    marginTop: 8,
-    marginBottom: 8,
     width: "100%",
     backgroundColor: theme.BACKGROUND_COLOR,
-  },
-  input_noborder: {
-    borderWidth: 0,
+    padding: 10,
   },
   text_input_block: {
     flexDirection: "row",

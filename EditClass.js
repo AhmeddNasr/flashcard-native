@@ -6,6 +6,7 @@ import {
   TextInput,
   ActivityIndicator,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import theme from "./theme";
 import * as SQLite from "expo-sqlite";
@@ -16,6 +17,7 @@ import InputWithImage from "./utils/InputWithImage";
 import * as Yup from "yup";
 import FloatingActionButton from "./utils/FloatingActionButton";
 import debounce from "./utils/debounce";
+import Animated, { SlideOutLeft } from "react-native-reanimated";
 
 export default function EditClass({ route, navigation }) {
   const [cardsData, setCardsData] = useState([{ id: -1 }]);
@@ -237,13 +239,11 @@ export default function EditClass({ route, navigation }) {
             <View
               style={{
                 flexDirection: "row",
-                backgroundColor: theme.PRIMARY_COLOR,
+                backgroundColor: theme.BACKGROUND_COLOR_ELEVATED,
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: 10,
                 marginBottom: 30,
-                borderTop: theme.TEXT_COLOR_VERY_OPACITY,
-                borderTopWidth: 1,
               }}
             >
               <TextInput
@@ -280,7 +280,7 @@ export default function EditClass({ route, navigation }) {
                   .map((item, index) => {
                     let card = `cards.${index}`;
                     return (
-                      <View
+                      <Animated.View
                         style={{
                           ...styles.card_block,
                           borderColor:
@@ -302,7 +302,15 @@ export default function EditClass({ route, navigation }) {
                           item={item}
                           card={card}
                         />
-                      </View>
+                        {deleting && (
+                          <Button
+                            title="Delete"
+                            color={theme.SECONDARY_COLOR}
+                            style={{ padding: 10 }}
+                            onPress={() => arrayHelpers.remove(index)}
+                          />
+                        )}
+                      </Animated.View>
                     );
                   });
               }}
@@ -335,7 +343,11 @@ export default function EditClass({ route, navigation }) {
                   flex: 3,
                 }}
                 onPress={() => {
-                  fieldArrayRef.current.push({ id: latestId.current });
+                  fieldArrayRef.current.push({
+                    id: latestId.current,
+                    question_text: "",
+                    answer_text: "",
+                  });
                   latestId.current = latestId.current - 1;
                 }}
               >
@@ -351,7 +363,7 @@ export default function EditClass({ route, navigation }) {
           {/* <Text style={styles.text}>Class id: {route.params.id}</Text> */}
         </View>
       </KeyboardAwareScrollView>
-      <FloatingActionButton />
+      <FloatingActionButton setDeleting={setDeleting} />
     </View>
   );
 }
@@ -379,6 +391,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     width: "100%",
     backgroundColor: theme.BACKGROUND_COLOR_ELEVATED,
+    borderRadius: 10,
   },
   input_hint: {
     color: theme.TEXT_COLOR_OPACITY,
@@ -386,9 +399,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   header: {
-    backgroundColor: theme.PRIMARY_COLOR,
+    // backgroundColor: theme.PRIMARY_COLOR,
     marginTop: 8,
     marginBottom: 25,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.TEXT_COLOR,
   },
   card_block: {
     marginBottom: 30,
