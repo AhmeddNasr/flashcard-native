@@ -21,15 +21,17 @@ export default function Flashcard(props) {
   const questionImage = props.data.question_image;
   const answer = props.data.answer_text;
   const answerImage = props.data.answer_image;
-  // TODO
   Animated.addWhitelistedNativeProps({ display: true });
   const flipAnimation = useSharedValue(0);
 
   useEffect(() => {
+    if (props.currentIndex != props.index) {
+      return;
+    }
     if (props.frontVisible) {
-      flipToBack();
-    } else {
       flipToFront();
+    } else {
+      flipToBack();
     }
   }, [props.frontVisible]);
 
@@ -70,7 +72,7 @@ export default function Flashcard(props) {
 
   const hideFrontStyle = useAnimatedStyle(() => {
     return {
-      display: props.frontVisible
+      display: !props.frontVisible
         ? `${flipAnimation.value >= 90 ? "flex" : "none"}`
         : `${flipAnimation.value < 90 ? "none" : "flex"}`,
     };
@@ -78,7 +80,7 @@ export default function Flashcard(props) {
 
   const hideBackStyle = useAnimatedStyle(() => {
     return {
-      display: props.frontVisible
+      display: !props.frontVisible
         ? `${flipAnimation.value > 90 ? "none" : "flex"}`
         : `${flipAnimation.value <= 90 ? "flex" : "none"}`,
     };
