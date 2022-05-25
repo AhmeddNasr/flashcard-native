@@ -20,7 +20,9 @@ import debounce from "./utils/debounce";
 import Animated, { SlideOutLeft } from "react-native-reanimated";
 
 export default function EditClass({ route, navigation }) {
-  const [cardsData, setCardsData] = useState([{ id: -1 }]);
+  const [cardsData, setCardsData] = useState([
+    { id: -1, question_text: "", answer_text: "" },
+  ]);
   const [classData, setClassData] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [listReady, setListReady] = useState(false);
@@ -274,20 +276,14 @@ export default function EditClass({ route, navigation }) {
                 return formik.values.cards
                   .filter(
                     (card) =>
-                      card.question_text.includes(query) ||
-                      card.answer_text.includes(query)
+                      (card.question_text &&
+                        card.question_text.includes(query)) ||
+                      (card.answer_text && card.answer_text.includes(query))
                   )
                   .map((item, index) => {
                     let card = `cards.${index}`;
                     return (
-                      <Animated.View
-                        style={{
-                          ...styles.card_block,
-                          borderColor:
-                            index % 2 ? theme.TEXT_COLOR : theme.PRIMARY_COLOR,
-                        }}
-                        key={item.id}
-                      >
+                      <Animated.View style={styles.card_block} key={item.id}>
                         <InputWithImage
                           type="question"
                           index={index}
@@ -406,7 +402,7 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.TEXT_COLOR,
   },
   card_block: {
-    marginBottom: 30,
+    marginBottom: 50,
     backgroundColor: theme.BACKGROUND_COLOR_ELEVATED,
   },
   button_group: {
