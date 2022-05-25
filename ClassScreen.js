@@ -13,7 +13,9 @@ import Animated, {
   withSequence,
   withSpring,
   withTiming,
+  useAnimatedGestureHandler,
 } from "react-native-reanimated";
+import { PanGestureHandler } from "react-native-gesture-handler";
 const db = SQLite.openDatabase("db.db");
 
 function ClassScreen({ navigation, route }) {
@@ -69,12 +71,14 @@ function ClassScreen({ navigation, route }) {
     };
   });
 
+  const slideAnimationSpringConfig = {
+    stiffness: 200,
+    damping: 17,
+  };
+
   // card slide animation
   useEffect(() => {
-    slideAnimation.value = withSpring(currentIndex, {
-      stiffness: 150,
-      damping: 18,
-    });
+    slideAnimation.value = withSpring(currentIndex, slideAnimationSpringConfig);
   }, [currentIndex]);
 
   //Go to next card or the beginning if its the last card
@@ -114,6 +118,36 @@ function ClassScreen({ navigation, route }) {
     setFrontVisible(true);
   };
 
+  const gestureHandler = useAnimatedGestureHandler(
+    {
+      onStart: (_, ctx) => {
+        ctx.startX = slideAnimation.value;
+      },
+      onActive: (event, ctx) => {
+        slideAnimation.value = ctx.startX - event.translationX / screenWidth;
+      },
+      onEnd: (_, ctx) => {
+        if (slideAnimation.value - ctx.startX > 0.15) {
+          slideAnimation.value = withSpring(
+            Math.floor(ctx.startX + 1),
+            slideAnimationSpringConfig
+          );
+        } else if (slideAnimation.value - ctx.startX < -0.15) {
+          slideAnimation.value = withSpring(
+            Math.floor(ctx.startX - 1),
+            slideAnimationSpringConfig
+          );
+        } else {
+          slideAnimation.value = withSpring(
+            Math.floor(ctx.startX),
+            slideAnimationSpringConfig
+          );
+        }
+      },
+    },
+    [slideAnimation]
+  );
+
   if (!ready) {
     return null;
   }
@@ -131,26 +165,30 @@ function ClassScreen({ navigation, route }) {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
-        <Animated.View
-          style={[
-            {
-              flexDirection: "row",
-              flex: 1,
-            },
-            slideAnimationStyle,
-          ]}
-        >
-          {cardData.map((card, index) => (
-            <View style={{ marginRight: 20 }} key={index}>
-              <Flashcard
-                data={card}
-                setCurrentIndex={setCurrentIndex}
-                frontVisible={frontVisible}
-                setFrontVisible={setFrontVisible}
-              />
-            </View>
-          ))}
-        </Animated.View>
+        <PanGestureHandler onGestureEvent={gestureHandler}>
+          <Animated.View
+            style={[
+              {
+                flexDirection: "row",
+                flex: 1,
+              },
+              slideAnimationStyle,
+            ]}
+          >
+            {cardData.map((card, index) => (
+              <View style={{ marginRight: 20 }} key={index}>
+                <Flashcard
+                  data={card}
+                  setCurrentIndex={setCurrentIndex}
+                  frontVisible={frontVisible}
+                  setFrontVisible={setFrontVisible}
+                  currentIndex={currentIndex}
+                  index={index}
+                />
+              </View>
+            ))}
+          </Animated.View>
+        </PanGestureHandler>
         <View
           style={{
             flexDirection: "row",
