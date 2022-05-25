@@ -135,6 +135,7 @@ function ClassScreen({ navigation, route }) {
           style={[
             {
               flexDirection: "row",
+              flex: 1,
             },
             slideAnimationStyle,
           ]}

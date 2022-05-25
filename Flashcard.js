@@ -1,24 +1,26 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+} from "react-native";
 import { useState, useRef, useEffect } from "react";
 import Animated, {
   useSharedValue,
-  useAnimatedProps,
   useAnimatedStyle,
-  withTiming,
   interpolate,
   withSpring,
 } from "react-native-reanimated";
 import theme from "./theme";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { render } from "react-dom";
 
 export default function Flashcard(props) {
   const question = props.data.question_text;
   const questionImage = props.data.question_image;
   const answer = props.data.answer_text;
   const answerImage = props.data.answer_image;
-  const [renderFront, setRenderFront] = useState(true);
-  //STOP HERE
   // TODO
   Animated.addWhitelistedNativeProps({ display: true });
   const flipAnimation = useSharedValue(0);
@@ -32,8 +34,8 @@ export default function Flashcard(props) {
   }, [props.frontVisible]);
 
   const springConfig = {
-    stiffness: 70,
-    damping: 10,
+    stiffness: 80,
+    damping: 11,
   };
 
   const flipToFront = () => {
@@ -82,49 +84,35 @@ export default function Flashcard(props) {
     };
   }, [props.frontVisible]);
 
-  // const hideBackStyle = !props.frontVisible
-  //   ? // if the back is visible (starts at 180 deg)
-  //     flipAnimation.interpolate({
-  //       inputRange: [0, 90, 91, 180],
-  //       outputRange: [1, 1, 0, 0],
-  //     })
-  //   : // if the front is visible (starts at 0deg)
-  //     flipAnimation.interpolate({
-  //       inputRange: [0, 90, 180],
-  //       outputRange: [0, 0, 1],
-  //     });
-
   return (
     <View style={styles.cardWrapper}>
       <Animated.View
         collapsable={false}
         style={[styles.card, styles.cardFront, flipToBackStyle, hideFrontStyle]}
       >
-        <KeyboardAwareScrollView>
+        <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.innerCard}>
             {/* Front side */}
-            <View>
-              <View>
-                {questionImage && (
-                  <Image
-                    source={{
-                      uri: questionImage,
-                    }}
-                    style={styles.image}
-                  />
-                )}
-                <Text style={styles.text}>{question ? question : ""}</Text>
-              </View>
-            </View>
+            {questionImage && (
+              <Image
+                source={{
+                  uri: questionImage,
+                }}
+                style={styles.image}
+              />
+            )}
+            <Text style={styles.text}>
+              {"question" + question ? question : ""}
+            </Text>
           </View>
-        </KeyboardAwareScrollView>
+        </ScrollView>
       </Animated.View>
 
       <Animated.View
         collapsable={false}
         style={[styles.card, styles.cardFront, flipToFrontStyle, hideBackStyle]}
       >
-        <KeyboardAwareScrollView>
+        <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.innerCard}>
             <View>
               {/* Back side */}
@@ -141,7 +129,7 @@ export default function Flashcard(props) {
               </View>
             </View>
           </View>
-        </KeyboardAwareScrollView>
+        </ScrollView>
       </Animated.View>
     </View>
   );
@@ -149,19 +137,17 @@ export default function Flashcard(props) {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    maxHeight: 400,
-    justifyContent: "center",
-    alignItems: "center",
     flex: 1,
+    width: Dimensions.get("screen").width - 40,
   },
   card: {
     padding: 20,
     backgroundColor: theme.PRIMARY_COLOR,
     borderRadius: 15,
-    maxHeight: 400,
     flex: 1,
-    justifyContent: "center",
-    width: "100%",
+  },
+  scrollView: {
+    // backgroundColor: "pink",
   },
   cardFront: {
     backfaceVisibility: "hidden",
@@ -171,7 +157,6 @@ const styles = StyleSheet.create({
   },
   innerCard: {
     flex: 1,
-    minHeight: 350,
     justifyContent: "center",
     alignItems: "center",
   },
