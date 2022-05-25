@@ -14,6 +14,9 @@ import Animated, {
   withSpring,
   withTiming,
   useAnimatedGestureHandler,
+  Extrapolate,
+  interpolate,
+  runOnJS,
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
 const db = SQLite.openDatabase("db.db");
@@ -103,7 +106,14 @@ function ClassScreen({ navigation, route }) {
     return {
       transform: [
         {
-          translateX: (-screenWidth + 20) * slideAnimation.value,
+          translateX:
+            (-screenWidth + 20) *
+            interpolate(
+              slideAnimation.value,
+              [0, cardData.length - 1],
+              [0, cardData.length - 1],
+              Extrapolate.CLAMP
+            ),
         },
       ],
     };
@@ -121,6 +131,11 @@ function ClassScreen({ navigation, route }) {
   const gestureHandler = useAnimatedGestureHandler(
     {
       onStart: (_, ctx) => {
+        if (slideAnimation.value < 0) {
+          slideAnimation.value = 0;
+        } else if (slideAnimation.value >= cardData.length - 1) {
+          slideAnimation.value = cardData.length - 1;
+        }
         ctx.startX = slideAnimation.value;
       },
       onActive: (event, ctx) => {
@@ -132,11 +147,15 @@ function ClassScreen({ navigation, route }) {
             Math.floor(ctx.startX + 1),
             slideAnimationSpringConfig
           );
+          if (currentIndex < cardData.length - 1) {
+            runOnJS(incrementFlashcardIndex)(true);
+          }
         } else if (slideAnimation.value - ctx.startX < -0.15) {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX - 1),
             slideAnimationSpringConfig
           );
+          runOnJS(decrementFlashcardIndex)();
         } else {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX),
@@ -145,7 +164,7 @@ function ClassScreen({ navigation, route }) {
         }
       },
     },
-    [slideAnimation]
+    [slideAnimation, cardData]
   );
 
   if (!ready) {
