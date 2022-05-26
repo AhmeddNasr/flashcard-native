@@ -164,7 +164,7 @@ function ClassScreen({ navigation, route }) {
         }
       },
     },
-    [slideAnimation, cardData]
+    [slideAnimation, cardData, incrementFlashcardIndex]
   );
 
   if (!ready) {
