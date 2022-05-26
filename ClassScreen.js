@@ -164,7 +164,7 @@ function ClassScreen({ navigation, route }) {
         }
       },
     },
-    [slideAnimation, cardData, incrementFlashcardIndex]
+    [slideAnimation, cardData, incrementFlashcardIndex, decrementFlashcardIndex]
   );
 
   if (!ready) {
@@ -184,7 +184,10 @@ function ClassScreen({ navigation, route }) {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
-        <PanGestureHandler onGestureEvent={gestureHandler}>
+        <PanGestureHandler
+          onGestureEvent={gestureHandler}
+          activeOffsetX={[-10, 10]}
+        >
           <Animated.View
             style={[
               {
