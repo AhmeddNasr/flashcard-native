@@ -19,7 +19,11 @@ import Animated, {
   runOnJS,
   interpolateColor,
 } from "react-native-reanimated";
-import { PanGestureHandler } from "react-native-gesture-handler";
+import {
+  PanGestureHandler,
+  State,
+  TapGestureHandler,
+} from "react-native-gesture-handler";
 const db = SQLite.openDatabase("db.db");
 
 function ClassScreen({ navigation, route }) {
@@ -226,6 +230,13 @@ function ClassScreen({ navigation, route }) {
     ]
   );
 
+  // handle Tap to flip
+  const tapRef = useRef(null);
+  const tapHandler = (event) => {
+    if (event.nativeEvent.state === State.ACTIVE) {
+      setFrontVisible(!frontVisible);
+    }
+  };
   if (!ready) {
     return null;
   }
@@ -245,34 +256,44 @@ function ClassScreen({ navigation, route }) {
         <PanGestureHandler
           onGestureEvent={gestureHandler}
           activeOffsetX={[-10, 10]}
+          waitFor={tapRef}
         >
-          <Animated.View
-            style={[
-              {
-                flexDirection: "row",
-                flex: 1,
-              },
-              slideAnimationStyle,
-            ]}
-            onLayout={(event) => {
-              if (!!!flashcardHeight) {
-                setFlashcardHeight(event.nativeEvent.layout.height);
-              }
-            }}
-          >
-            {cardData.map((card, index) => (
-              <View style={{ marginRight: 20 }} key={index}>
-                <Flashcard
-                  data={card}
-                  setCurrentIndex={setCurrentIndex}
-                  frontVisible={frontVisible}
-                  setFrontVisible={setFrontVisible}
-                  currentIndex={currentIndex}
-                  index={index}
-                  borderStyle={slideBorderColorAnimationStyle}
-                />
-              </View>
-            ))}
+          <Animated.View style={{ flex: 1 }}>
+            <TapGestureHandler
+              ref={tapRef}
+              onHandlerStateChange={tapHandler}
+              maxDeltaX={10}
+              maxDeltaY={10}
+            >
+              <Animated.View
+                style={[
+                  {
+                    flexDirection: "row",
+                    flex: 1,
+                  },
+                  slideAnimationStyle,
+                ]}
+                onLayout={(event) => {
+                  if (!!!flashcardHeight) {
+                    setFlashcardHeight(event.nativeEvent.layout.height);
+                  }
+                }}
+              >
+                {cardData.map((card, index) => (
+                  <View style={{ marginRight: 20 }} key={index}>
+                    <Flashcard
+                      data={card}
+                      setCurrentIndex={setCurrentIndex}
+                      frontVisible={frontVisible}
+                      setFrontVisible={setFrontVisible}
+                      currentIndex={currentIndex}
+                      index={index}
+                      borderStyle={slideBorderColorAnimationStyle}
+                    />
+                  </View>
+                ))}
+              </Animated.View>
+            </TapGestureHandler>
           </Animated.View>
         </PanGestureHandler>
         <View
