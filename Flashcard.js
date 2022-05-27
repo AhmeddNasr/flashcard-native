@@ -7,7 +7,7 @@ import {
   View,
   ScrollView,
 } from "react-native";
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -16,6 +16,36 @@ import Animated, {
 } from "react-native-reanimated";
 import theme from "./theme";
 
+function InnerFlashcard(props) {
+  return (
+    <Animated.View
+      collapsable={false}
+      style={[
+        styles.card,
+        styles.cardFront,
+        props.flipToStyle,
+        props.hideStyle,
+        props.borderStyle,
+      ]}
+    >
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <View style={styles.innerCard}>
+          {/* Front side */}
+          {props.image && (
+            <Image
+              source={{
+                uri: props.image,
+              }}
+              style={styles.image}
+            />
+          )}
+          <Text style={styles.text}>{props.text ? props.text : ""}</Text>
+        </View>
+      </ScrollView>
+    </Animated.View>
+  );
+}
+
 export default function Flashcard(props) {
   const question = props.data.question_text;
   const questionImage = props.data.question_image;
@@ -23,7 +53,6 @@ export default function Flashcard(props) {
   const answerImage = props.data.answer_image;
   Animated.addWhitelistedNativeProps({ display: true });
   const flipAnimation = useSharedValue(0);
-
   useEffect(() => {
     if (props.currentIndex != props.index) {
       return;
@@ -88,51 +117,24 @@ export default function Flashcard(props) {
 
   return (
     <View style={styles.cardWrapper}>
-      <Animated.View
-        collapsable={false}
-        style={[styles.card, styles.cardFront, flipToBackStyle, hideFrontStyle]}
-      >
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <View style={styles.innerCard}>
-            {/* Front side */}
-            {questionImage && (
-              <Image
-                source={{
-                  uri: questionImage,
-                }}
-                style={styles.image}
-              />
-            )}
-            <Text style={styles.text}>
-              {"question" + question ? question : ""}
-            </Text>
-          </View>
-        </ScrollView>
-      </Animated.View>
-
-      <Animated.View
-        collapsable={false}
-        style={[styles.card, styles.cardFront, flipToFrontStyle, hideBackStyle]}
-      >
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <View style={styles.innerCard}>
-            <View>
-              {/* Back side */}
-              <View>
-                {answerImage && (
-                  <Image
-                    source={{
-                      uri: answerImage,
-                    }}
-                    style={styles.image}
-                  />
-                )}
-                <Text style={styles.text}>{answer ? answer : ""}</Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </Animated.View>
+      <InnerFlashcard
+        hideStyle={hideFrontStyle}
+        flipToStyle={flipToBackStyle}
+        text={question}
+        image={questionImage}
+        borderStyle={
+          props.index <= props.currentIndex ? props.borderStyle : null
+        }
+      />
+      <InnerFlashcard
+        hideStyle={hideBackStyle}
+        flipToStyle={flipToFrontStyle}
+        text={answer}
+        image={answerImage}
+        borderStyle={
+          props.index <= props.currentIndex ? props.borderStyle : null
+        }
+      />
     </View>
   );
 }
@@ -147,6 +149,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.PRIMARY_COLOR,
     borderRadius: 15,
     flex: 1,
+    borderWidth: 4,
+    borderColor: theme.PRIMARY_COLOR,
   },
   scrollView: {
     // backgroundColor: "pink",

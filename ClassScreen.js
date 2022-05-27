@@ -17,6 +17,7 @@ import Animated, {
   Extrapolate,
   interpolate,
   runOnJS,
+  interpolateColor,
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
 const db = SQLite.openDatabase("db.db");
@@ -61,6 +62,8 @@ function ClassScreen({ navigation, route }) {
   // fade in and out animation for +1 number
   const fadeAnimation = useSharedValue(0);
   const slideAnimation = useSharedValue(0);
+  const slideBorderColorAnimation = useSharedValue(0);
+
   const fadeInOut = () => {
     "worklet";
     fadeAnimation.value = withSequence(
@@ -68,18 +71,21 @@ function ClassScreen({ navigation, route }) {
       withTiming(0, { duration: 2000 })
     );
   };
+
   const fadeInOutStyle = useAnimatedStyle(() => {
     return {
       opacity: fadeAnimation.value,
     };
   });
 
+  // card slide animation
+
   const slideAnimationSpringConfig = {
-    stiffness: 200,
-    damping: 17,
+    stiffness: 130,
+    damping: 10,
+    mass: 0.5,
   };
 
-  // card slide animation
   useEffect(() => {
     slideAnimation.value = withSpring(currentIndex, slideAnimationSpringConfig);
   }, [currentIndex]);
@@ -119,6 +125,16 @@ function ClassScreen({ navigation, route }) {
     };
   });
 
+  const slideBorderColorAnimationStyle = useAnimatedStyle(() => {
+    return {
+      borderColor: interpolateColor(
+        slideBorderColorAnimation.value,
+        [-1, -0.1, 0],
+        ["#54bd54", "#54bd54", theme.PRIMARY_COLOR]
+      ),
+    };
+  });
+
   // Go to the previous card
   const decrementFlashcardIndex = () => {
     if (currentIndex == 0) {
@@ -140,27 +156,33 @@ function ClassScreen({ navigation, route }) {
       },
       onActive: (event, ctx) => {
         slideAnimation.value = ctx.startX - event.translationX / screenWidth;
+        slideBorderColorAnimation.value = event.translationX / screenWidth;
       },
       onEnd: (_, ctx) => {
+        // next card
         if (slideAnimation.value - ctx.startX > 0.15) {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX + 1),
             slideAnimationSpringConfig
           );
+          slideBorderColorAnimation.value = 0;
           if (currentIndex < cardData.length - 1) {
             runOnJS(incrementFlashcardIndex)(true);
           }
+          // previous card
         } else if (slideAnimation.value - ctx.startX < -0.15) {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX - 1),
             slideAnimationSpringConfig
           );
+          slideBorderColorAnimation.value = 0;
           runOnJS(decrementFlashcardIndex)();
         } else {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX),
             slideAnimationSpringConfig
           );
+          slideBorderColorAnimation.value = 0;
         }
       },
     },
@@ -180,7 +202,6 @@ function ClassScreen({ navigation, route }) {
       />
     );
   }
-
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -206,6 +227,7 @@ function ClassScreen({ navigation, route }) {
                   setFrontVisible={setFrontVisible}
                   currentIndex={currentIndex}
                   index={index}
+                  borderStyle={slideBorderColorAnimationStyle}
                 />
               </View>
             ))}
