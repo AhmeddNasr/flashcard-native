@@ -69,11 +69,11 @@ export default function Flashcard(props) {
     damping: 11,
   };
 
-  const flipToFront = () => {
+  const flipToBack = () => {
     flipAnimation.value = withSpring(180, springConfig);
   };
 
-  const flipToBack = () => {
+  const flipToFront = () => {
     flipAnimation.value = withSpring(0, springConfig);
   };
 
@@ -118,8 +118,8 @@ export default function Flashcard(props) {
   return (
     <View style={styles.cardWrapper}>
       <InnerFlashcard
-        hideStyle={hideFrontStyle}
-        flipToStyle={flipToBackStyle}
+        hideStyle={hideBackStyle}
+        flipToStyle={flipToFrontStyle}
         text={question}
         image={questionImage}
         borderStyle={
@@ -127,8 +127,8 @@ export default function Flashcard(props) {
         }
       />
       <InnerFlashcard
-        hideStyle={hideBackStyle}
-        flipToStyle={flipToFrontStyle}
+        hideStyle={hideFrontStyle}
+        flipToStyle={flipToBackStyle}
         text={answer}
         image={answerImage}
         borderStyle={
