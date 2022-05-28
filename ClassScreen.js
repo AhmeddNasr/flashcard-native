@@ -93,6 +93,7 @@ function ClassScreen({ navigation, route }) {
 
   useEffect(() => {
     slideAnimation.value = withSpring(currentIndex, slideAnimationSpringConfig);
+    setFrontVisible(true);
   }, [currentIndex]);
 
   //Go to next card or the beginning if its the last card
@@ -159,7 +160,7 @@ function ClassScreen({ navigation, route }) {
       return;
     }
     setCurrentIndex(currentIndex - 1);
-    setFrontVisible(true);
+    // setFrontVisible(true);
   };
 
   const gestureHandler = useAnimatedGestureHandler(
@@ -198,19 +199,21 @@ function ClassScreen({ navigation, route }) {
             // reset border color to primary after swipe animation is complete
             () => {
               slideBorderColorAnimation.value = 0;
+              // call incrementFlashcardIndex with true if user swiped from lower half (correct answer), false if not
+              if (currentIndex < cardData.length - 1) {
+                runOnJS(incrementFlashcardIndex)(ctx.correct !== 3);
+              }
             }
           );
-          // call incrementFlashcardIndex with true if user swiped from lower half (correct answer), false if not
-          if (currentIndex < cardData.length - 1) {
-            runOnJS(incrementFlashcardIndex)(ctx.correct !== 3);
-          }
           // previous card if ratio swiped was more than 0.15 in negative direction
         } else if (slideAnimation.value - ctx.startX < -0.15) {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX - 1),
-            slideAnimationSpringConfig
+            slideAnimationSpringConfig,
+            () => {
+              runOnJS(decrementFlashcardIndex)();
+            }
           );
-          runOnJS(decrementFlashcardIndex)();
         } else {
           // reset card position if swipe was not large enough in either direction
           slideAnimation.value = withSpring(
@@ -256,6 +259,7 @@ function ClassScreen({ navigation, route }) {
         <PanGestureHandler
           onGestureEvent={gestureHandler}
           activeOffsetX={[-10, 10]}
+          failOffsetY={[-10, 10]}
           waitFor={tapRef}
         >
           <Animated.View style={{ flex: 1 }}>

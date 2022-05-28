@@ -28,7 +28,13 @@ function InnerFlashcard(props) {
         props.borderStyle,
       ]}
     >
-      <ScrollView contentContainerStyle={styles.scrollView}>
+      <ScrollView
+        alwaysBounceVertical={false}
+        // contentContainerStyle={styles.scrollView}
+        centerContent={true}
+        persistentScrollbar={true}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+      >
         <View style={styles.innerCard}>
           {/* Front side */}
           {props.image && (
@@ -53,6 +59,11 @@ export default function Flashcard(props) {
   const answerImage = props.data.answer_image;
   Animated.addWhitelistedNativeProps({ display: true });
   const flipAnimation = useSharedValue(0);
+
+  useEffect(() => {
+    flipAnimation.value = 0;
+  }, [props.currentIndex]);
+
   useEffect(() => {
     if (props.currentIndex != props.index) {
       return;
