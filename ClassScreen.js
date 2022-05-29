@@ -1,7 +1,7 @@
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import * as SQLite from "expo-sqlite";
 import theme from "./theme";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Flashcard from "./Flashcard";
 import { MaterialIcons } from "@expo/vector-icons";
 import FlashcardControl from "./utils/FlashcardControl";
@@ -19,12 +19,27 @@ import Animated, {
   runOnJS,
   interpolateColor,
 } from "react-native-reanimated";
-import {
-  PanGestureHandler,
-  State,
-  TapGestureHandler,
-} from "react-native-gesture-handler";
+import { Gesture, PanGestureHandler } from "react-native-gesture-handler";
 const db = SQLite.openDatabase("db.db");
+
+function GenerateFlashcards(props) {
+  return (
+    <React.Fragment>
+      {props.cardData.map((card, index) => (
+        <View style={{ marginRight: 20 }} key={index}>
+          <Flashcard
+            data={card}
+            slideAnimation={props.slideAnimation}
+            slideBorderColorAnimation={props.slideBorderColorAnimatiom}
+            index={index}
+          />
+        </View>
+      ))}
+    </React.Fragment>
+  );
+}
+
+const MemoizedGenerateFlashcards = React.memo(GenerateFlashcards);
 
 function ClassScreen({ navigation, route }) {
   const [frontVisible, setFrontVisible] = useState(true);
@@ -101,9 +116,7 @@ function ClassScreen({ navigation, route }) {
     setFrontVisible(true);
     // push current card to the end of array if user didn't answer correctly
     if (!correct) {
-      let tempArr = cardData;
-      tempArr.push(cardData[currentIndex]);
-      setCardData(tempArr);
+      setCardData([...cardData, cardData[currentIndex]]);
       fadeInOut();
     }
     // Go to the begninning and clear cards added when user answer incorrectly
@@ -192,7 +205,7 @@ function ClassScreen({ navigation, route }) {
       },
       onEnd: (_, ctx) => {
         // next card if ratio swiped was more than 0.15
-        if (slideAnimation.value - ctx.startX > 0.15) {
+        if (slideAnimation.value - ctx.startX > 0.1) {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX + 1),
             slideAnimationSpringConfig,
@@ -206,7 +219,7 @@ function ClassScreen({ navigation, route }) {
             }
           );
           // previous card if ratio swiped was more than 0.15 in negative direction
-        } else if (slideAnimation.value - ctx.startX < -0.15) {
+        } else if (slideAnimation.value - ctx.startX < -0.1) {
           slideAnimation.value = withSpring(
             Math.floor(ctx.startX - 1),
             slideAnimationSpringConfig,
@@ -233,13 +246,6 @@ function ClassScreen({ navigation, route }) {
     ]
   );
 
-  // handle Tap to flip
-  const tapRef = useRef(null);
-  const tapHandler = (event) => {
-    if (event.nativeEvent.state === State.ACTIVE) {
-      setFrontVisible(!frontVisible);
-    }
-  };
   if (!ready) {
     return null;
   }
@@ -253,6 +259,7 @@ function ClassScreen({ navigation, route }) {
       />
     );
   }
+
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -260,44 +267,26 @@ function ClassScreen({ navigation, route }) {
           onGestureEvent={gestureHandler}
           activeOffsetX={[-10, 10]}
           failOffsetY={[-10, 10]}
-          waitFor={tapRef}
         >
-          <Animated.View style={{ flex: 1 }}>
-            <TapGestureHandler
-              ref={tapRef}
-              onHandlerStateChange={tapHandler}
-              maxDeltaX={10}
-              maxDeltaY={10}
-            >
-              <Animated.View
-                style={[
-                  {
-                    flexDirection: "row",
-                    flex: 1,
-                  },
-                  slideAnimationStyle,
-                ]}
-                onLayout={(event) => {
-                  if (!!!flashcardHeight) {
-                    setFlashcardHeight(event.nativeEvent.layout.height);
-                  }
-                }}
-              >
-                {cardData.map((card, index) => (
-                  <View style={{ marginRight: 20 }} key={index}>
-                    <Flashcard
-                      data={card}
-                      setCurrentIndex={setCurrentIndex}
-                      frontVisible={frontVisible}
-                      setFrontVisible={setFrontVisible}
-                      currentIndex={currentIndex}
-                      index={index}
-                      borderStyle={slideBorderColorAnimationStyle}
-                    />
-                  </View>
-                ))}
-              </Animated.View>
-            </TapGestureHandler>
+          <Animated.View
+            style={[
+              {
+                flexDirection: "row",
+                flex: 1,
+              },
+              slideAnimationStyle,
+            ]}
+            onLayout={(event) => {
+              if (!!!flashcardHeight) {
+                setFlashcardHeight(event.nativeEvent.layout.height);
+              }
+            }}
+          >
+            <MemoizedGenerateFlashcards
+              cardData={cardData}
+              slideAnimation={slideAnimation}
+              slideBorderColorAnimatiom={slideBorderColorAnimation}
+            />
           </Animated.View>
         </PanGestureHandler>
         <View

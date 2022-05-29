@@ -7,14 +7,16 @@ import {
   View,
   ScrollView,
 } from "react-native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   interpolate,
   withSpring,
+  interpolateColor,
 } from "react-native-reanimated";
 import theme from "./theme";
+import { State, TapGestureHandler } from "react-native-gesture-handler";
 
 function InnerFlashcard(props) {
   return (
@@ -25,7 +27,7 @@ function InnerFlashcard(props) {
         styles.cardFront,
         props.flipToStyle,
         props.hideStyle,
-        props.borderStyle,
+        // props.borderStyle,
       ]}
     >
       <ScrollView
@@ -59,21 +61,39 @@ export default function Flashcard(props) {
   const answerImage = props.data.answer_image;
   Animated.addWhitelistedNativeProps({ display: true });
   const flipAnimation = useSharedValue(0);
+  const [isFrontVisible, setIsFrontVisible] = useState(true);
+  // const slideAnimation = props.slideAnimation;
+  // const slideBorderColorAnimation = props.slideBorderColorAnimation;
+
+  // const slideBorderColorStyle = useAnimatedStyle(() => {
+  //   // if (Math.floor(slideAnimation.value) != props.index) {
+  //   //   return { borderColor: theme.PRIMARY_COLOR };
+  //   // }
+  //   return {
+  //     borderColor: interpolateColor(
+  //       props.slideBorderColorAnimation.value,
+  //       [-1, -0.1, 0, 1, 2, 2.9, 3, 3.1],
+  //       [
+  //         theme.GREEN_COLOR,
+  //         theme.GREEN_COLOR,
+  //         theme.PRIMARY_COLOR,
+  //         theme.PRIMARY_COLOR,
+  //         theme.SECONDARY_COLOR,
+  //         theme.SECONDARY_COLOR,
+  //         theme.PRIMARY_COLOR,
+  //         theme.PRIMARY_COLOR,
+  //       ]
+  //     ),
+  //   };
+  // });
 
   useEffect(() => {
-    flipAnimation.value = 0;
-  }, [props.currentIndex]);
-
-  useEffect(() => {
-    if (props.currentIndex != props.index) {
-      return;
-    }
-    if (props.frontVisible) {
+    if (isFrontVisible) {
       flipToFront();
     } else {
       flipToBack();
     }
-  }, [props.frontVisible]);
+  }, [isFrontVisible]);
 
   const springConfig = {
     stiffness: 80,
@@ -112,41 +132,56 @@ export default function Flashcard(props) {
 
   const hideFrontStyle = useAnimatedStyle(() => {
     return {
-      display: !props.frontVisible
+      display: !isFrontVisible
         ? `${flipAnimation.value >= 90 ? "flex" : "none"}`
         : `${flipAnimation.value < 90 ? "none" : "flex"}`,
     };
-  }, [props.frontVisible]);
+  }, [isFrontVisible]);
 
   const hideBackStyle = useAnimatedStyle(() => {
     return {
-      display: !props.frontVisible
+      display: !isFrontVisible
         ? `${flipAnimation.value > 90 ? "none" : "flex"}`
         : `${flipAnimation.value <= 90 ? "flex" : "none"}`,
     };
-  }, [props.frontVisible]);
+  }, [isFrontVisible]);
+
+  const tapHandler = (event) => {
+    if (event.nativeEvent.state === State.ACTIVE) {
+      setIsFrontVisible(!isFrontVisible);
+    }
+  };
 
   return (
-    <View style={styles.cardWrapper}>
-      <InnerFlashcard
-        hideStyle={hideBackStyle}
-        flipToStyle={flipToFrontStyle}
-        text={question}
-        image={questionImage}
-        borderStyle={
-          props.index <= props.currentIndex ? props.borderStyle : null
-        }
-      />
-      <InnerFlashcard
-        hideStyle={hideFrontStyle}
-        flipToStyle={flipToBackStyle}
-        text={answer}
-        image={answerImage}
-        borderStyle={
-          props.index <= props.currentIndex ? props.borderStyle : null
-        }
-      />
-    </View>
+    <TapGestureHandler
+      onHandlerStateChange={tapHandler}
+      maxDeltaX={9}
+      maxDeltaY={9}
+      maxDurationMs={250}
+    >
+      <View style={styles.cardWrapper}>
+        <InnerFlashcard
+          hideStyle={hideBackStyle}
+          flipToStyle={flipToFrontStyle}
+          text={question}
+          image={questionImage}
+          // borderStyle={
+          //   props.index <= props.currentIndex ? props.borderStyle : null
+          // }
+          // borderStyle={slideBorderColorStyle}
+        />
+        <InnerFlashcard
+          hideStyle={hideFrontStyle}
+          flipToStyle={flipToBackStyle}
+          text={answer}
+          image={answerImage}
+          // borderStyle={
+          //   props.index <= props.currentIndex ? props.borderStyle : null
+          // }
+          // borderStyle={slideBorderColorStyle}
+        />
+      </View>
+    </TapGestureHandler>
   );
 }
 
